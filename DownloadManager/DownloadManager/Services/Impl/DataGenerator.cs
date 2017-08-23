@@ -1,5 +1,5 @@
 using System;
-using DownloadManager.SystemWrappers;
+using SystemInterface.IO;
 
 namespace DownloadManager.Services.Impl
 {

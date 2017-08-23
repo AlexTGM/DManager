@@ -1,0 +1,36 @@
+using System;
+using System.IO;
+using System.Net;
+using SystemInterface.Net;
+using DownloadManager.Models;
+
+namespace DownloadManager.Services.Impl
+{
+    public class FileInformationProvider : IFileInformationProvider
+    {
+        private readonly IHttpWebRequestFactory _requestFactory;
+
+        public FileInformationProvider(IHttpWebRequestFactory requestFactory)
+        {
+            _requestFactory = requestFactory;
+        }
+
+        public FileInformation ObtainInformation(Uri url)
+        {
+            var httpWebRequest = _requestFactory.Create(url);
+
+            httpWebRequest.Credentials = CredentialCache.DefaultNetworkCredentials;
+            httpWebRequest.Method = "HEAD";
+            httpWebRequest.Proxy = null;
+
+            var test = httpWebRequest.GetResponse();
+
+            return new FileInformation
+            {
+                AcceptRanges = test.Headers[HttpResponseHeader.AcceptRanges],
+                ContentLength = test.ContentLength,
+                Name = Path.GetFileName(url.LocalPath)
+            };
+        }
+    }
+}
