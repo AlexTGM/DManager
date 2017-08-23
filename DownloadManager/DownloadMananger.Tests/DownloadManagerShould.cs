@@ -3,28 +3,6 @@ using Xunit;
 
 namespace DownloadMananger.Tests
 {
-    public interface IFileDownloader
-    {
-        string DownloadFile(string path);
-    }
-
-    public class FileDownloader : IFileDownloader
-    {
-        public string DownloadFile(string url)
-        {
-            throw new System.NotImplementedException();
-        }
-    }
-
-    public class FileDownloaderShould
-    {
-        [Fact]
-        public void DownloadFile()
-        {
-            
-        }
-    }
-
     public class DownloadManagerShould
     {
         [Theory]

@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownloadMananger.Tests", "DownloadMananger.Tests\DownloadMananger.Tests.csproj", "{26C765B0-5746-4EC4-AFA9-40B2B7F61E00}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DownloadManager", "DownloadManager\DownloadManager.csproj", "{73506BB4-8CA8-418E-9A88-C2E6BEE9CA39}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DownloadManager", "DownloadManager\DownloadManager.csproj", "{EE2DB3B9-3499-4E6B-8851-607132B4F74A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{26C765B0-5746-4EC4-AFA9-40B2B7F61E00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26C765B0-5746-4EC4-AFA9-40B2B7F61E00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26C765B0-5746-4EC4-AFA9-40B2B7F61E00}.Release|Any CPU.Build.0 = Release|Any CPU
-		{73506BB4-8CA8-418E-9A88-C2E6BEE9CA39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{73506BB4-8CA8-418E-9A88-C2E6BEE9CA39}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{73506BB4-8CA8-418E-9A88-C2E6BEE9CA39}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{73506BB4-8CA8-418E-9A88-C2E6BEE9CA39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE2DB3B9-3499-4E6B-8851-607132B4F74A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE2DB3B9-3499-4E6B-8851-607132B4F74A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE2DB3B9-3499-4E6B-8851-607132B4F74A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE2DB3B9-3499-4E6B-8851-607132B4F74A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

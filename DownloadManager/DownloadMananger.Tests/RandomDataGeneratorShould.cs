@@ -1,11 +1,11 @@
+using SystemInterface.IO;
 using DownloadManager.Services;
 using DownloadManager.Services.Impl;
-using DownloadManager.SystemWrappers;
 using FluentAssertions;
 using Moq;
 using Xunit;
 
-namespace DownloadManager.Tests
+namespace DownloadMananger.Tests
 {
     public class RandomDataGeneratorShould
     {
