@@ -16,7 +16,7 @@ namespace DownloadMananger.Tests
 
             IFileSaver fileSaver = new FileSaver(fileMock.Object);
 
-            fileSaver.SaveFile(streamMock.Object);
+            fileSaver.SaveFile(streamMock.Object, It.IsAny<string>());
         }
     }
 }

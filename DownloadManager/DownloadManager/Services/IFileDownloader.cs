@@ -5,6 +5,6 @@ namespace DownloadManager.Services
 {
     public interface IFileDownloader
     {
-        IHttpWebResponse GetResponse(Uri path);
+        IHttpWebResponse GetResponse(Uri path, long start, long end);
     }
 }

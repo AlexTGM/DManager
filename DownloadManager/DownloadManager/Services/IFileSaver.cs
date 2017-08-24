@@ -4,6 +4,6 @@ namespace DownloadManager.Services
 {
     public interface IFileSaver
     {
-        void SaveFile(IStream responseStream);
+        void SaveFile(IStream responseStream, string filePath);
     }
 }

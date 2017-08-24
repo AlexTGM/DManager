@@ -12,11 +12,11 @@ namespace DownloadManager.Services.Impl
             _file = file;
         }
 
-        public void SaveFile(IStream responseStream)
+        public void SaveFile(IStream responseStream, string filePath)
         {
             var buffer = new byte[524288];
 
-            using (var fileStream = _file.OpenWrite($"{DateTime.Now.Ticks}"))
+            using (var fileStream = _file.OpenWrite(filePath))
             {
                 int bytesRead;
 

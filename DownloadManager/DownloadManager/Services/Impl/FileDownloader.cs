@@ -12,9 +12,13 @@ namespace DownloadManager.Services.Impl
             _httpWebRequestFactory = httpWebRequestFactory;
         }
 
-        public IHttpWebResponse GetResponse(Uri url)
+        public IHttpWebResponse GetResponse(Uri url, long start, long end)
         {
-            return _httpWebRequestFactory.Create(url).GetResponse();
+            var request = _httpWebRequestFactory.Create(url);
+
+            request.AddRange(start, end);
+
+            return request.GetResponse();
         }
     }
 }

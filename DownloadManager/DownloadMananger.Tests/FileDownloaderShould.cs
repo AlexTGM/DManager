@@ -31,7 +31,7 @@ namespace DownloadMananger.Tests
 
             _httpWebRequestFactoryMock.Setup(m => m.Create(It.IsAny<Uri>())).Returns(requestMock.Object);
 
-            var response = _fileDownloader.GetResponse(It.IsAny<Uri>());
+            var response = _fileDownloader.GetResponse(It.IsAny<Uri>(), It.IsAny<int>(), It.IsAny<int>());
 
             response.ShouldBeEquivalentTo(responseMock.Object);
         }

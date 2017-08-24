@@ -1,7 +1,12 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace DownloadManager.Services
 {
     public interface IDownloadManager
     {
-        void DownloadFile(string url);
+        List<Task> Tasks { get; }
+
+        Task DownloadFile(string url, int threads);
     }
 }

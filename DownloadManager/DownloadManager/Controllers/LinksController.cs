@@ -2,6 +2,7 @@
 using SystemInterface.Net;
 using SystemWrapper.IO;
 using SystemWrapper.Net;
+using DownloadManager.Factories;
 using DownloadManager.Services;
 using DownloadManager.Services.Impl;
 using Microsoft.AspNetCore.Mvc;
@@ -21,9 +22,10 @@ namespace DownloadManager.Controllers
             IFile file = new FileWrap();
             IFileSaver fileSaver = new FileSaver(file);
             IFileDownloader fileDownloader = new FileDownloader(httpWebRequestWrapFactory);
-            IDownloadManager downloadManager = new DManager(fileInformationProvider, fileDownloader, fileSaver, new UrlHelperTools());
+            IFileMerger fileMerger = new FileMerger(file, new BinaryReaderFactory(), new BinaryWriterFactory());
+            IDownloadManager downloadManager = new DManager(fileInformationProvider, fileDownloader, fileMerger, fileSaver, new UrlHelperTools());
 
-            downloadManager.DownloadFile(url);
+            downloadManager.DownloadFile(url, 2);
         }
     }
 }
