@@ -15,6 +15,11 @@ namespace DownloadManager.Services.Impl
             _requestFactory = requestFactory;
         }
 
+        public bool CheckIfUriHasValidFormat(string url, out Uri uri)
+        {
+            return Uri.TryCreate(url, UriKind.Absolute, out uri);
+        }
+
         public FileInformation ObtainInformation(Uri url)
         {
             var httpWebRequest = _requestFactory.Create(url);

@@ -6,6 +6,8 @@ using DownloadManager.Services;
 using DownloadManager.Services.Impl;
 using Microsoft.AspNetCore.Mvc;
 
+using DManager = DownloadManager.Services.Impl.DownloadManager;
+
 namespace DownloadManager.Controllers
 {
     [Route("api/[controller]")]
@@ -14,13 +16,14 @@ namespace DownloadManager.Controllers
         [HttpGet("{url}")]
         public void Get(string url)
         {
+            IHttpWebRequestFactory httpWebRequestWrapFactory = new HttpWebRequestWrapFactory();
+            IFileInformationProvider fileInformationProvider = new FileInformationProvider(httpWebRequestWrapFactory);
             IFile file = new FileWrap();
             IFileSaver fileSaver = new FileSaver(file);
-            IHttpWebRequestFactory httpWebRequestFactory = new HttpWebRequestWrapFactory();
-            IFileInformationProvider fileInformationProvider = new FileInformationProvider(httpWebRequestFactory);
-            IFileDownloader fileDownloader = new FileDownloader(fileInformationProvider, httpWebRequestFactory, fileSaver);
+            IFileDownloader fileDownloader = new FileDownloader(httpWebRequestWrapFactory);
+            IDownloadManager downloadManager = new DManager(fileInformationProvider, fileDownloader, fileSaver, new UrlHelperTools());
 
-            fileDownloader.DownloadFile(url);
+            downloadManager.DownloadFile(url);
         }
     }
 }

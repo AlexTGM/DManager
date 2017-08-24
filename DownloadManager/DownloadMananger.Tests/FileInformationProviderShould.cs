@@ -12,6 +12,19 @@ namespace DownloadMananger.Tests
 {
     public class FileInformationProviderShould
     {
+        [Theory]
+        [InlineData("http://", false)]
+        [InlineData("test/test.test", false)]
+        [InlineData("http://test.domain/test.file", true)]
+        public void CheckIfUriHasInvalidFormat(string url, bool expected)
+        {
+            IFileInformationProvider provider = new FileInformationProvider(It.IsAny<IHttpWebRequestFactory>());
+
+            var actual = provider.CheckIfUriHasValidFormat(url, out Uri uri);
+
+            actual.ShouldBeEquivalentTo(expected);
+        }
+
         [Fact]
         public void GetFileInformation()
         {

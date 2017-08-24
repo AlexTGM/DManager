@@ -1,7 +1,10 @@
+using System;
+using SystemInterface.Net;
+
 namespace DownloadManager.Services
 {
     public interface IFileDownloader
     {
-        string DownloadFile(string path);
+        IHttpWebResponse GetResponse(Uri path);
     }
 }
