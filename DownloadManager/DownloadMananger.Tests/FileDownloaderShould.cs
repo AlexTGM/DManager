@@ -79,7 +79,7 @@ namespace DownloadMananger.Tests
         public void MeasureCurrentDownloadingSpeed()
         {
             _fileDownloader.DownloadFile(new TaskInformation(It.IsAny<string>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<Uri>()));
-            _fileDownloader.CurrentDownloadingSpeed.ShouldBeEquivalentTo(0.8);
+            _fileDownloader.CurrentDownloadingSpeed.Should().BeInRange(99*8e-6, 100*8e-6);
         }
     }
 }

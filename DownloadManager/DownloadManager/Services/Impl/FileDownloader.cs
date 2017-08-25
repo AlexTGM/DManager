@@ -11,6 +11,8 @@ namespace DownloadManager.Services.Impl
         private readonly IFile _file;
         private readonly IHttpWebRequestFactory _httpWebRequestFactory;
 
+        private long _totalBytesWritten;
+
         public FileDownloader(IFile file, IHttpWebRequestFactory httpWebRequestFactory)
         {
             _file = file;
@@ -30,52 +32,44 @@ namespace DownloadManager.Services.Impl
         private long SaveFile(IStream responseStream, string filePath)
         {
             var buffer = new byte[524288];
-            long totalBytesWritten = 0L, bytesFromPreviousCheckpointDownloaded = 0;
+            long bytesFromPreviousCheckpointDownloaded = 0;
 
             using (var fileStream = _file.OpenWrite(filePath))
             {
                 int bytesRead;
                 var downloadStarted = DateTime.Now;
-                var checkpointTime = default(DateTime);
+                var checkpointTime = downloadStarted;
 
                 while ((bytesRead = responseStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
                     fileStream.Write(buffer, 0, bytesRead);
 
-                    totalBytesWritten += bytesRead;
+                    _totalBytesWritten += bytesRead;
 
-                    var secondsFromLastCheckpoint = (DateTime.Now - checkpointTime).Seconds;
+                    var millisecondsFromLastCheckpoint = (DateTime.Now - checkpointTime).TotalMilliseconds;
 
-                    if (checkpointTime == default(DateTime))
-                    {
+                    bytesFromPreviousCheckpointDownloaded += bytesRead;
+
+                    if (millisecondsFromLastCheckpoint >= 1000)
+                    { 
+                        CurrentDownloadingSpeed = bytesFromPreviousCheckpointDownloaded * 8e-6 / millisecondsFromLastCheckpoint * 1000;
                         checkpointTime = DateTime.Now;
-                        bytesFromPreviousCheckpointDownloaded = bytesRead;
-                        CurrentDownloadingSpeed = bytesRead * 8e-6;
-
-                    }
-                    else if (secondsFromLastCheckpoint < 1)
-                    {
-                        bytesFromPreviousCheckpointDownloaded += bytesRead;
-                    }
-                    else
-                    {
-                        bytesFromPreviousCheckpointDownloaded += bytesRead;
-                        CurrentDownloadingSpeed = (double)bytesFromPreviousCheckpointDownloaded / secondsFromLastCheckpoint
-                            * 8e-6;
                         bytesFromPreviousCheckpointDownloaded = 0;
-                        checkpointTime = DateTime.Now;
-                        Debug.WriteLine($"{filePath} Computed speed: {CurrentDownloadingSpeed} mbit");
+                        //Debug.WriteLine($"{filePath} Computed speed: {CurrentDownloadingSpeed:F} mbit || {current:F} mbit");
                     }
 
-                    CurrentBytesDownloadedChanged?.Invoke(this, totalBytesWritten);
+                    CurrentBytesDownloadedChanged?.Invoke(this, _totalBytesWritten);
                 }
                 
                 var downloadFinished = DateTime.Now;
 
-                Debug.WriteLine($"{filePath} started {downloadStarted.Ticks} finished {downloadFinished}");
+                if ((downloadFinished - downloadStarted).Seconds < 1)
+                    CurrentDownloadingSpeed = _totalBytesWritten * 8e-6;
+
+                //Debug.WriteLine($"{filePath} started {downloadStarted.Ticks} finished {downloadFinished}");
             }
 
-            return totalBytesWritten;
+            return _totalBytesWritten;
         }
     }
 }
