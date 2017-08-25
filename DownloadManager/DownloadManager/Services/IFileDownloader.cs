@@ -10,5 +10,6 @@ namespace DownloadManager.Services
         event EventHandler<long> CurrentBytesDownloadedChanged;
 
         double CurrentDownloadingSpeed { get; set; }
+        bool InProgress { get; set; }
     }
 }

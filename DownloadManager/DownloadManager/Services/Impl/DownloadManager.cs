@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DownloadManager.Factories;
@@ -34,9 +35,18 @@ namespace DownloadManager.Services.Impl
             var fileInfo = _fileInfoProvider.ObtainInformation(uri);
 
             Tasks = _downloadingTasksFactory.Create(fileInfo, tasksCount);
-            Tasks.ForEach(task => task.DownloadTask = Task.Run(() => _fileDownloader.DownloadFile(task)));
 
-            await Task.WhenAll(Tasks.Select(task => task.DownloadTask));
+            
+                Tasks[0].FileDownloader.CurrentBytesDownloadedChanged += (sender, l) =>
+                {
+                    var speed = Tasks.Where(task=>task.FileDownloader.InProgress)
+                    .Select(task => task.FileDownloader.CurrentDownloadingSpeed).Sum();
+                    Debug.WriteLine(speed);
+                };
+
+            var tasks = Tasks.Select(taskInformation => taskInformation.StartTask()).ToList();
+
+            await Task.WhenAll(tasks);
             _fileMerger.Merge(Tasks.Select(task => task.FileName), fileInfo.Name);
         }
     }

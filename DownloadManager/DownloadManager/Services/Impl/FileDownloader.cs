@@ -28,6 +28,7 @@ namespace DownloadManager.Services.Impl
 
         public event EventHandler<long> CurrentBytesDownloadedChanged;
         public double CurrentDownloadingSpeed { get; set; }
+        public bool InProgress { get; set; } = false;
 
         private long SaveFile(IStream responseStream, string filePath)
         {
@@ -39,6 +40,8 @@ namespace DownloadManager.Services.Impl
                 int bytesRead;
                 var downloadStarted = DateTime.Now;
                 var checkpointTime = downloadStarted;
+
+                InProgress = true;
 
                 while ((bytesRead = responseStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
@@ -60,7 +63,9 @@ namespace DownloadManager.Services.Impl
 
                     CurrentBytesDownloadedChanged?.Invoke(this, _totalBytesWritten);
                 }
-                
+
+                InProgress = false;
+
                 var downloadFinished = DateTime.Now;
 
                 if ((downloadFinished - downloadStarted).Seconds < 1)

@@ -1,11 +1,19 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DownloadManager.Services;
 
 namespace DownloadManager.Models
 {
     public class TaskInformation
     {
-        public TaskInformation(string fileName, long bytesStart, long bytesEnd, Uri uri)
+        public readonly IFileDownloader FileDownloader;
+
+        public TaskInformation(IFileDownloader fileDownloader)
+        {
+            FileDownloader = fileDownloader;
+        }
+
+        public void Initialize(string fileName, long bytesStart, long bytesEnd, Uri uri)
         {
             FileName = fileName;
             BytesStart = bytesStart;
@@ -13,11 +21,14 @@ namespace DownloadManager.Models
             Uri = uri;
         }
 
-        public long BytesStart { get; }
-        public long BytesEnd { get; }
-        public string FileName { get; }
-        public Uri Uri { get; }
+        public Task StartTask()
+        {
+            return Task.Run(() => FileDownloader.DownloadFile(this));
+        }
 
-        public Task DownloadTask { get; set; }
+        public long BytesStart { get; set; }
+        public long BytesEnd { get; set; }
+        public string FileName { get; set; }
+        public Uri Uri { get; set; }
     }
 }

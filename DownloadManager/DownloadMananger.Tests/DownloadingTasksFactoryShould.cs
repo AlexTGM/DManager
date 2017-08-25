@@ -18,7 +18,7 @@ namespace DownloadMananger.Tests
 
         public DownloadingTasksFactoryShould()
         {
-            _downloadingTasksFactory = new DownloadingTasksFactory();
+            _downloadingTasksFactory = new DownloadingTasksFactory(TODO);
         }
 
         [Fact]
