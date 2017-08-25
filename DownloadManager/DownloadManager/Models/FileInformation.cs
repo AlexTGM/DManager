@@ -1,3 +1,5 @@
+using System;
+
 namespace DownloadManager.Models
 {
     public struct FileInformation
@@ -5,5 +7,6 @@ namespace DownloadManager.Models
         public string Name { get; set; }
         public long ContentLength { get; set; }
         public string AcceptRanges { get; set; }
+        public Uri Uri { get; set; }
     }
 }

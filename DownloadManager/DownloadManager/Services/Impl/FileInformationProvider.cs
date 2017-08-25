@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
-using SystemInterface.Net;
+using DownloadManager.Factories;
 using DownloadManager.Models;
 
 namespace DownloadManager.Services.Impl
@@ -22,11 +22,7 @@ namespace DownloadManager.Services.Impl
 
         public FileInformation ObtainInformation(Uri url)
         {
-            var httpWebRequest = _requestFactory.Create(url);
-
-            httpWebRequest.Credentials = CredentialCache.DefaultNetworkCredentials;
-            httpWebRequest.Method = "HEAD";
-            httpWebRequest.Proxy = null;
+            var httpWebRequest = _requestFactory.CreateHeadRequest(url);
 
             var test = httpWebRequest.GetResponse();
 
@@ -34,7 +30,8 @@ namespace DownloadManager.Services.Impl
             {
                 AcceptRanges = test.Headers[HttpResponseHeader.AcceptRanges],
                 ContentLength = test.ContentLength,
-                Name = Path.GetFileName(url.LocalPath)
+                Name = Path.GetFileName(url.LocalPath),
+                Uri = url
             };
         }
     }

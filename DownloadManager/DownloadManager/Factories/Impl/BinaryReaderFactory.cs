@@ -1,7 +1,7 @@
 ﻿using SystemInterface.IO;
 using SystemWrapper.IO;
 
-namespace DownloadManager.Factories
+namespace DownloadManager.Factories.Impl
 {
     public class BinaryReaderFactory : IBinaryReaderFactory
     {

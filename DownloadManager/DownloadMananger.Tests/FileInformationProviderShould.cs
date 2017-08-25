@@ -8,6 +8,8 @@ using FluentAssertions;
 using Moq;
 using Xunit;
 
+using IHttpWebRequestFactory = DownloadManager.Factories.IHttpWebRequestFactory;
+
 namespace DownloadMananger.Tests
 {
     public class FileInformationProviderShould
@@ -36,10 +38,11 @@ namespace DownloadMananger.Tests
             {
                 AcceptRanges = expectedAcceptRanges,
                 ContentLength = expectedContentLength,
-                Name = expectedFileName
+                Name = expectedFileName,
+                Uri = new Uri($"http://test.domain/{expectedFileName}")
             };
 
-            var webHeaderCollection = new WebHeaderCollection {{HttpResponseHeader.AcceptRanges, expectedAcceptRanges } };
+            var webHeaderCollection = new WebHeaderCollection {{HttpResponseHeader.AcceptRanges, expectedAcceptRanges}};
 
             var httpWebResponseMock = new Mock<IHttpWebResponse>();
             httpWebResponseMock.SetupGet(m => m.ContentLength).Returns(expectedContentLength);
@@ -49,7 +52,7 @@ namespace DownloadMananger.Tests
             httpWebRequestMock.Setup(m => m.GetResponse()).Returns(httpWebResponseMock.Object);
 
             var httpWebRequestFactoryMock = new Mock<IHttpWebRequestFactory>();
-            httpWebRequestFactoryMock.Setup(m => m.Create(It.IsAny<Uri>())).Returns(httpWebRequestMock.Object);
+            httpWebRequestFactoryMock.Setup(m => m.CreateHeadRequest(It.IsAny<Uri>())).Returns(httpWebRequestMock.Object);
 
             IFileInformationProvider provider = new FileInformationProvider(httpWebRequestFactoryMock.Object);
 

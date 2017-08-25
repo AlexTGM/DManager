@@ -1,10 +1,9 @@
-using System;
-using SystemInterface.Net;
+using DownloadManager.Models;
 
 namespace DownloadManager.Services
 {
     public interface IFileDownloader
     {
-        IHttpWebResponse GetResponse(Uri path, long start, long end);
+        long DownloadFile(TaskInformation taskInfo);
     }
 }

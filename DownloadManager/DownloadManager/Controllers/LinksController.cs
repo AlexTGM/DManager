@@ -1,8 +1,7 @@
 ﻿using SystemInterface.IO;
-using SystemInterface.Net;
 using SystemWrapper.IO;
-using SystemWrapper.Net;
 using DownloadManager.Factories;
+using DownloadManager.Factories.Impl;
 using DownloadManager.Services;
 using DownloadManager.Services.Impl;
 using Microsoft.AspNetCore.Mvc;
@@ -17,15 +16,14 @@ namespace DownloadManager.Controllers
         [HttpGet("{url}")]
         public void Get(string url)
         {
-            IHttpWebRequestFactory httpWebRequestWrapFactory = new HttpWebRequestWrapFactory();
-            IFileInformationProvider fileInformationProvider = new FileInformationProvider(httpWebRequestWrapFactory);
+            IHttpWebRequestFactory httpWebRequestFactory = new HttpWebRequestFactory();
+            IFileInformationProvider fileInfoProvider = new FileInformationProvider(httpWebRequestFactory);
             IFile file = new FileWrap();
-            IFileSaver fileSaver = new FileSaver(file);
-            IFileDownloader fileDownloader = new FileDownloader(httpWebRequestWrapFactory);
             IFileMerger fileMerger = new FileMerger(file, new BinaryReaderFactory(), new BinaryWriterFactory());
-            IDownloadManager downloadManager = new DManager(fileInformationProvider, fileDownloader, fileMerger, fileSaver, new UrlHelperTools());
+            IFileDownloader fileDownloader = new FileDownloader(file, httpWebRequestFactory);
+            IDownloadManager downloadManager = new DManager(fileInfoProvider, fileMerger, fileDownloader);
 
-            downloadManager.DownloadFile(url, 2);
+            downloadManager.DownloadFile(new UrlHelperTools().UrlDecode(url), 8);
         }
     }
 }

@@ -2,71 +2,50 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DownloadManager.Models;
 
 namespace DownloadManager.Services.Impl
 {
     public class DownloadManager : IDownloadManager
     {
-        private readonly IUrlHelperTools _urlHelperTools;
         private readonly IFileInformationProvider _fileInfoProvider;
-        private readonly IFileDownloader _fileDownloader;
         private readonly IFileMerger _fileMerger;
-        private readonly IFileSaver _fileSaver;
+        private readonly IFileDownloader _fileDownloader;
 
-        public List<Task> Tasks { get; } = new List<Task>();
+        public List<TaskInformation> Tasks { get; private set; }
 
-        public DownloadManager(IFileInformationProvider fileInfoProvider,
-            IFileDownloader fileDownloader, IFileMerger fileMerger,
-            IFileSaver fileSaver, IUrlHelperTools urlHelperTools)
+        public DownloadManager(IFileInformationProvider fileInfoProvider, 
+            IFileMerger fileMerger, IFileDownloader fileDownloader)
         {
             _fileInfoProvider = fileInfoProvider;
-            _fileDownloader = fileDownloader;
             _fileMerger = fileMerger;
-            _fileSaver = fileSaver;
-
-            _urlHelperTools = urlHelperTools;
+            _fileDownloader = fileDownloader;
         }
 
-        public async Task DownloadFile(string url, int threads)
+        public async Task DownloadFile(string url, int tasksCount)
         {
-            var unescapedUrl = _urlHelperTools.UrlDecode(url);
-
-            var validUrl = _fileInfoProvider.CheckIfUriHasValidFormat(unescapedUrl, out Uri uri);
+            var validUrl = _fileInfoProvider.CheckIfUriHasValidFormat(url, out Uri uri);
             if (!validUrl) throw new FormatException("Url has wrong format!");
 
             var fileInfo = _fileInfoProvider.ObtainInformation(uri);
 
-            var temporaryFilesPaths = Enumerable.Range(0, threads).Select(p => $"{fileInfo.Name}_{p}");
-            var bounds = ComputeBoundsForEachTask(fileInfo.ContentLength, threads);
+            Tasks = GenerateTasksInformations(fileInfo, tasksCount);
+            Tasks.ForEach(task => task.DownloadTask = Task.Run(() => _fileDownloader.DownloadFile(task)));
 
-            for (var i = 0; i < threads; i++)
-            {
-                var index = i;
-
-                Tasks.Add(Task.Run(() =>
-                {
-                    var bound = bounds.ElementAt(index);
-                    var file = temporaryFilesPaths.ElementAt(index);
-
-                    using (var stream = _fileDownloader.GetResponse(uri, bound[0], bound[1]).GetResponseStream())
-                        _fileSaver.SaveFile(stream, file);
-                }));
-            }
-
-            await Task.WhenAll(Tasks);
-
-            _fileMerger.Merge(temporaryFilesPaths, fileInfo.Name);
+            await Task.WhenAll(Tasks.Select(task => task.DownloadTask));
+            _fileMerger.Merge(Tasks.Select(task => task.FileName), fileInfo.Name);
         }
-
-        private static IEnumerable<long[]> ComputeBoundsForEachTask(long contentLength, int tasksCount)
-        {
-            var bytesPerTask = contentLength / tasksCount;
-
-            for (var i = 0; i < tasksCount; i++)
+        
+        private static List<TaskInformation> GenerateTasksInformations(FileInformation fileInformation, int tasksCount)
+            => Enumerable.Range(0, tasksCount).Select(taskId =>
             {
-                yield return new[]
-                    {bytesPerTask * i, bytesPerTask * (i + 1) - (tasksCount == i ? 0 : 1)};
-            }
-        }
+                var bytesPerTask = (long)Math.Ceiling((double)fileInformation.ContentLength / tasksCount);
+
+                var fileName = $"{fileInformation.Name}_{taskId}";
+                var bytesStart = bytesPerTask * taskId + (taskId == 0 ? 0 : 1);
+                var bytesEnd = bytesPerTask * (taskId + 1);
+
+                return new TaskInformation(fileName, bytesStart, bytesEnd, fileInformation.Uri);
+            }).ToList();
     }
 }
