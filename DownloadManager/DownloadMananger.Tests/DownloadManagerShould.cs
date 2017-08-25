@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SystemInterface.IO;
 using SystemInterface.Net;
 using DownloadManager.Factories;
@@ -41,7 +42,7 @@ namespace DownloadMananger.Tests
         }
 
         [Fact]
-        public void ShouldMergeFilesAfterDownloading()
+        public async Task ShouldMergeFilesAfterDownloading()
         {
             const string output = "output";
             var partialFiles = new[] { $"{output}_0", $"{output}_1" };
@@ -56,7 +57,7 @@ namespace DownloadMananger.Tests
                     new TaskInformation(partialFiles[1], 0, 0, null)
                 });
 
-            _downloadManager.DownloadFile("output", 2);
+            await _downloadManager.DownloadFile("output", 2);
 
             _fileMergerMock.Verify(m => m.Merge(partialFiles, output), Times.Once);
         }
