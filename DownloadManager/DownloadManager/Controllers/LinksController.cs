@@ -21,7 +21,7 @@ namespace DownloadManager.Controllers
             IFile file = new FileWrap();
             IFileMerger fileMerger = new FileMerger(file, new BinaryReaderFactory(), new BinaryWriterFactory());
             IFileDownloader fileDownloader = new FileDownloader(file, httpWebRequestFactory);
-            IDownloadManager downloadManager = new DManager(fileInfoProvider, fileMerger, fileDownloader);
+            IDownloadManager downloadManager = new DManager(fileInfoProvider, fileMerger, fileDownloader, new DownloadingTasksFactory());
 
             downloadManager.DownloadFile(new UrlHelperTools().UrlDecode(url), 8);
         }
