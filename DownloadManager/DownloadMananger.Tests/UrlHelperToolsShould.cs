@@ -16,5 +16,15 @@ namespace DownloadMananger.Tests
 
             actual.ShouldBeEquivalentTo("http://test.domain/test.file");
         }
+
+        [Fact]
+        public void EncodeUrlToString()
+        {
+            IUrlHelperTools helperTools = new UrlHelperTools();
+
+            var actual = helperTools.UrlEncode("http://test.domain/test.file");
+
+            actual.ShouldBeEquivalentTo("http%3A%2F%2Ftest.domain%2Ftest.file");
+        }
     }
 }

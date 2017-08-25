@@ -6,5 +6,8 @@ namespace DownloadManager.Services.Impl
     {
         public string UrlDecode(string url)
             => Uri.UnescapeDataString(url);
+
+        public string UrlEncode(string url)
+            => Uri.EscapeDataString(url);
     }
 }
