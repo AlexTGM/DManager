@@ -19,19 +19,29 @@ namespace DownloadManager.Services.Impl
             _httpWebRequestFactory = httpWebRequestFactory;
             _tasksRunner = tasksRunner;
             _fileDownloader = fileDownloader;
+
+            _fileDownloader.BytesDownloadedChanged += FileDownloaderProgressUpdated;
         }
+
+        public List<Func<long>> DownloadingFunctions { get; } = new List<Func<long>>();
+
+        public long TotalBytesDownloaded { get; private set; }
 
         public async Task<long> DownloadFile(Uri url, IEnumerable<TaskInformation> informations)
         {
             foreach (var taskInfo in informations)
             {
                 var request = _httpWebRequestFactory.CreateGetRangeRequest(url, taskInfo.BytesStart, taskInfo.BytesEnd);
+
                 DownloadingFunctions.Add(() => _fileDownloader.SaveFile(request.GetResponse(), taskInfo.FileName));
             }
 
             return (await Task.WhenAll(_tasksRunner.RunTasks(DownloadingFunctions))).Sum();
         }
 
-        public List<Func<long>> DownloadingFunctions { get; } = new List<Func<long>>();
+        private void FileDownloaderProgressUpdated(object sender, DownloadProgress downloadProgress)
+        {
+            TotalBytesDownloaded += downloadProgress.BytesDownloaded;
+        }
     }
 }

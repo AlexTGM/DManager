@@ -1,14 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using SystemInterface.Net;
 using DownloadManager.Models;
 
 namespace DownloadManager.Services
 {
-    public interface IFileDownloaderManager
+    public interface IFileDownloader
     {
-        Task<long> DownloadFile(Uri url, IEnumerable<TaskInformation> informations);
+        long SaveFile(IHttpWebResponse response, string fileName);
 
-        List<Func<long>> DownloadingFunctions { get; }
+        event EventHandler<DownloadProgress> BytesDownloadedChanged;
+        event EventHandler<DownloadSpeed> DownloadingSpeedChanged;
     }
 }

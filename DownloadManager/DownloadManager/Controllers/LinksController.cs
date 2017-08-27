@@ -21,7 +21,8 @@ namespace DownloadManager.Controllers
             IFile file = new FileWrap();
             IFileMerger fileMerger = new FileMerger(file, new BinaryReaderFactory(), new BinaryWriterFactory());
             ITasksRunner tasksRunner = new TasksRunner();
-            IFileDownloader fileDownloader = new FileDownloader(file);
+            IDateTimeProvider dateTimeProvider = new DateTimeProvider();
+            IFileDownloader fileDownloader = new FileDownloader(file, dateTimeProvider);
             IFileDownloaderManager fileDownloaderManager = new FileDownloaderManager(httpWebRequestFactory, tasksRunner, fileDownloader);
             INameGeneratorService nameGeneratorService = new NameGeneratorService();
             IDownloadingTasksFactory downloadingTasksFactory = new DownloadingTasksFactory(nameGeneratorService);
