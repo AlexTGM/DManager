@@ -18,8 +18,7 @@ namespace DownloadManager.Services.Impl
         public long DownloadFile(TaskInformation taskInfo)
         {
             var request = _httpWebRequestFactory.CreateGetRangeRequest(taskInfo.Uri, taskInfo.BytesStart, taskInfo.BytesEnd);
-            using (var stream = request.GetResponse().GetResponseStream())
-                return SaveFile(stream, taskInfo.FileName);
+            using (var stream = request.GetResponse().GetResponseStream()) return SaveFile(stream, taskInfo.FileName);
         }
 
         private long SaveFile(IStream responseStream, string filePath)
