@@ -32,11 +32,10 @@ namespace DownloadManager.Services.Impl
             if (!validUrl) throw new FormatException("Url has wrong format!");
 
             var fileInfo = _fileInfoProvider.ObtainInformation(uri);
+            Tasks = _downloadingTasksFactory.Create(fileInfo, tasksCount).ToList();
 
-            Tasks = _downloadingTasksFactory.Create(fileInfo, tasksCount);
-            Tasks.ForEach(task => task.DownloadTask = Task.Run(() => _fileDownloader.DownloadFile(task)));
+            await _fileDownloader.DownloadFile(uri, Tasks);
 
-            await Task.WhenAll(Tasks.Select(task => task.DownloadTask));
             _fileMerger.Merge(Tasks.Select(task => task.FileName), fileInfo.Name);
         }
     }

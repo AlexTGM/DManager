@@ -5,6 +5,6 @@ namespace DownloadManager.Factories
 {
     public interface IDownloadingTasksFactory
     {
-        List<TaskInformation> Create(FileInformation fileInformation, int tasksCount);
+        IEnumerable<TaskInformation> Create(FileInformation fileInformation, int tasksCount);
     }
 }

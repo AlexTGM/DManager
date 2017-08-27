@@ -1,13 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using SystemInterface.IO;
-using SystemInterface.Net;
 using DownloadManager.Factories;
 using DownloadManager.Models;
 using DownloadManager.Services;
-using FluentAssertions;
 using Moq;
 using Xunit;
 
@@ -33,7 +29,7 @@ namespace DownloadMananger.Tests
 
             _fileInfoProviderMock.Setup(m => m.ObtainInformation(It.IsAny<Uri>()));
             _fileInfoProviderMock.Setup(m => m.CheckIfUriHasValidFormat(It.IsAny<string>(), out uri)).Returns(true);
-            _fileDownloaderMock.Setup(m => m.DownloadFile(It.IsAny<TaskInformation>()));
+            _fileDownloaderMock.Setup(m => m.DownloadFile(It.IsAny<Uri>(), It.IsAny<TaskInformation[]>()));
             _fileMergerMock.Setup(m => m.Merge(It.IsAny<string[]>(), It.IsAny<string>()));
             _downloadingTasksFactoryMock.Setup(m => m.Create(It.IsAny<FileInformation>(), It.IsAny<int>()));
 
@@ -47,15 +43,14 @@ namespace DownloadMananger.Tests
             const string output = "output";
             var partialFiles = new[] { $"{output}_0", $"{output}_1" };
 
+            var fileInfos = new List<TaskInformation>
+                {new TaskInformation(partialFiles[0], 0, 0), new TaskInformation(partialFiles[1], 0, 0)};
+
             _fileInfoProviderMock.Setup(m => m.ObtainInformation(It.IsAny<Uri>()))
                 .Returns(new FileInformation {Name = output});
 
             _downloadingTasksFactoryMock.Setup(m => m.Create(It.IsAny<FileInformation>(), It.IsAny<int>()))
-                .Returns(new List<TaskInformation>
-                {
-                    new TaskInformation(partialFiles[0], 0, 0, null),
-                    new TaskInformation(partialFiles[1], 0, 0, null)
-                });
+                .Returns(fileInfos);
 
             await _downloadManager.DownloadFile("output", 2);
 

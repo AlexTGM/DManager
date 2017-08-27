@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using DownloadManager.Models;
@@ -15,7 +14,7 @@ namespace DownloadManager.Factories.Impl
             _nameGeneratorService = nameGeneratorService;
         }
 
-        public List<TaskInformation> Create(FileInformation fileInformation, int tasksCount)
+        public IEnumerable<TaskInformation> Create(FileInformation fileInformation, int tasksCount)
         {
             var bytesPerTask = fileInformation.ContentLength / tasksCount;
 
@@ -26,8 +25,8 @@ namespace DownloadManager.Factories.Impl
                 var bytesStart = bytesPerTask * taskId;
                 var bytesEnd = taskId == tasksCount - 1 ? fileInformation.ContentLength : bytesPerTask * (taskId + 1) - 1;
 
-                return new TaskInformation(fileName, bytesStart, bytesEnd, fileInformation.Uri);
-            }).ToList();
+                return new TaskInformation(fileName, bytesStart, bytesEnd);
+            });
         }
     }
 }

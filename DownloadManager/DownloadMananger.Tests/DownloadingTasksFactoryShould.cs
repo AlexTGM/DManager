@@ -32,7 +32,7 @@ namespace DownloadMananger.Tests
             var fileInfo = new FileInformation {ContentLength = ContentLength};
 
             var tasks = _downloadingTasksFactory.Create(fileInfo, TasksCount);
-            tasks.Count.ShouldBeEquivalentTo(TasksCount);
+            tasks.Count().ShouldBeEquivalentTo(TasksCount);
         }
 
         [Fact]
