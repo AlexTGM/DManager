@@ -21,10 +21,11 @@ namespace DownloadManager.Controllers
             IFile file = new FileWrap();
             IFileMerger fileMerger = new FileMerger(file, new BinaryReaderFactory(), new BinaryWriterFactory());
             ITasksRunner tasksRunner = new TasksRunner();
-            IFileDownloader fileDownloader = new FileDownloader(file, httpWebRequestFactory, tasksRunner);
+            IFileDownloader fileDownloader = new FileDownloader(file);
+            IFileDownloaderManager fileDownloaderManager = new FileDownloaderManager(httpWebRequestFactory, tasksRunner, fileDownloader);
             INameGeneratorService nameGeneratorService = new NameGeneratorService();
             IDownloadingTasksFactory downloadingTasksFactory = new DownloadingTasksFactory(nameGeneratorService);
-            IDownloadManager downloadManager = new DManager(fileInfoProvider, fileMerger, fileDownloader, downloadingTasksFactory);
+            IDownloadManager downloadManager = new DManager(fileInfoProvider, fileMerger, fileDownloaderManager, downloadingTasksFactory);
 
             downloadManager.DownloadFile(new UrlHelperTools().UrlDecode(url), 8);
         }

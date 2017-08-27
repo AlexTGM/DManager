@@ -11,18 +11,18 @@ namespace DownloadManager.Services.Impl
     {
         private readonly IFileInformationProvider _fileInfoProvider;
         private readonly IFileMerger _fileMerger;
-        private readonly IFileDownloader _fileDownloader;
+        private readonly IFileDownloaderManager _fileDownloaderManager;
         private readonly IDownloadingTasksFactory _downloadingTasksFactory;
 
         public List<TaskInformation> Tasks { get; private set; }
 
         public DownloadManager(IFileInformationProvider fileInfoProvider, 
-            IFileMerger fileMerger, IFileDownloader fileDownloader, 
+            IFileMerger fileMerger, IFileDownloaderManager fileDownloaderManager, 
             IDownloadingTasksFactory downloadingTasksFactory)
         {
             _fileInfoProvider = fileInfoProvider;
             _fileMerger = fileMerger;
-            _fileDownloader = fileDownloader;
+            _fileDownloaderManager = fileDownloaderManager;
             _downloadingTasksFactory = downloadingTasksFactory;
         }
 
@@ -34,7 +34,7 @@ namespace DownloadManager.Services.Impl
             var fileInfo = _fileInfoProvider.ObtainInformation(uri);
             Tasks = _downloadingTasksFactory.Create(fileInfo, tasksCount).ToList();
 
-            await _fileDownloader.DownloadFile(uri, Tasks);
+            await _fileDownloaderManager.DownloadFile(uri, Tasks);
 
             _fileMerger.Merge(Tasks.Select(task => task.FileName), fileInfo.Name);
         }

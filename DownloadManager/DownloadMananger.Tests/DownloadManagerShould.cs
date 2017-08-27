@@ -12,7 +12,7 @@ namespace DownloadMananger.Tests
     public class DownloadManagerShould
     {
         private readonly Mock<IFileInformationProvider> _fileInfoProviderMock;
-        private readonly Mock<IFileDownloader> _fileDownloaderMock;
+        private readonly Mock<IFileDownloaderManager> _fileDownloaderMock;
         private readonly Mock<IFileMerger> _fileMergerMock;
         private readonly Mock<IDownloadingTasksFactory> _downloadingTasksFactoryMock;
 
@@ -23,7 +23,7 @@ namespace DownloadMananger.Tests
             Uri uri;
 
             _fileInfoProviderMock = new Mock<IFileInformationProvider>();
-            _fileDownloaderMock = new Mock<IFileDownloader>();
+            _fileDownloaderMock = new Mock<IFileDownloaderManager>();
             _fileMergerMock = new Mock<IFileMerger>();
             _downloadingTasksFactoryMock = new Mock<IDownloadingTasksFactory>();
 

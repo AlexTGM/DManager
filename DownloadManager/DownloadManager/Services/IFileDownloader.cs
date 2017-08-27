@@ -5,7 +5,7 @@ using DownloadManager.Models;
 
 namespace DownloadManager.Services
 {
-    public interface IFileDownloader
+    public interface IFileDownloaderManager
     {
         Task<long> DownloadFile(Uri url, IEnumerable<TaskInformation> informations);
 

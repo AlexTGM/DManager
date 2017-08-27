@@ -15,52 +15,37 @@ using IHttpWebRequestFactory = DownloadManager.Factories.IHttpWebRequestFactory;
 
 namespace DownloadMananger.Tests
 {
-    public class FileDownloaderShould
+    public class FileDownloaderManagerShould
     {
-        private readonly Mock<IFile> _fileMock;
-        private readonly Mock<IStream> _streamMock;
         private readonly Mock<IHttpWebRequestFactory> _factoryMock;
-        private readonly Mock<IHttpWebRequest> _httpWebRequest;
-        private readonly Mock<IHttpWebResponse> _httpWebResponse;
-        private readonly Mock<IFileStream> _fileStreamMock;
-        private readonly Mock<ITasksRunner> _tasksRunner;
+        private readonly Mock<IHttpWebRequest> _httpWebRequestMock;
+        private readonly Mock<ITasksRunner> _tasksRunnerMock;
+        private readonly Mock<IFileDownloader> _fileDownloaderMock;
+        private readonly Mock<IHttpWebResponse> _httpWebResponseMock;
 
-        private readonly IFileDownloader _fileDownloader;
+        private readonly IFileDownloaderManager _fileDownloaderManager;
 
         private readonly IEnumerable<TaskInformation> _taskInformations;
 
-        public FileDownloaderShould()
+        public FileDownloaderManagerShould()
         {
             _taskInformations = Enumerable.Repeat(new TaskInformation("", 0, 0), 10);
 
-            _fileMock = new Mock<IFile>();
-            _fileStreamMock = new Mock<IFileStream>();
-            _streamMock = new Mock<IStream>();
             _factoryMock = new Mock<IHttpWebRequestFactory>();
-            _httpWebRequest = new Mock<IHttpWebRequest>();
-            _httpWebResponse = new Mock<IHttpWebResponse>();
-            _tasksRunner = new Mock<ITasksRunner>();
+            _httpWebRequestMock = new Mock<IHttpWebRequest>();
+            _tasksRunnerMock = new Mock<ITasksRunner>();
+            _fileDownloaderMock = new Mock<IFileDownloader>();
+            _httpWebResponseMock = new Mock<IHttpWebResponse>();
 
-            _fileStreamMock.Setup(m => m.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()));
-
-            _fileMock.Setup(m => m.OpenWrite(It.IsAny<string>()))
-                .Returns(_fileStreamMock.Object);
-
-            _streamMock.SetupGet(m => m.Length);
-            _streamMock.Setup(m => m.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()));
-
-            _httpWebResponse.Setup(m => m.GetResponseStream())
-                .Returns(_streamMock.Object);
-
-            _httpWebRequest.Setup(m => m.GetResponse())
-                .Returns(_httpWebResponse.Object);
+            _httpWebRequestMock.Setup(m => m.GetResponse())
+                .Returns(_httpWebResponseMock.Object);
 
             _factoryMock.Setup(m => m.CreateGetRangeRequest(It.IsAny<Uri>(), It.IsAny<long>(), It.IsAny<long>()))
-                .Returns(_httpWebRequest.Object);
+                .Returns(_httpWebRequestMock.Object);
 
-            _tasksRunner.Setup(m => m.RunTasks<long>(It.IsAny<Func<long>[]>()));
+            _tasksRunnerMock.Setup(m => m.RunTasks(It.IsAny<Func<long>[]>()));
 
-            _fileDownloader = new FileDownloader(_fileMock.Object, _factoryMock.Object, _tasksRunner.Object);
+            _fileDownloaderManager = new FileDownloaderManager(_factoryMock.Object, _tasksRunnerMock.Object, _fileDownloaderMock.Object);
         }
 
         [Fact]
@@ -68,8 +53,8 @@ namespace DownloadMananger.Tests
         {
             const int expectedTasks = 6;
 
-            await _fileDownloader.DownloadFile(It.IsAny<Uri>(), _taskInformations.Take(expectedTasks));
-            _fileDownloader.DownloadingFunctions.Count.ShouldBeEquivalentTo(expectedTasks);
+            await _fileDownloaderManager.DownloadFile(It.IsAny<Uri>(), _taskInformations.Take(expectedTasks));
+            _fileDownloaderManager.DownloadingFunctions.Count.ShouldBeEquivalentTo(expectedTasks);
         }
 
         [Theory]
@@ -78,23 +63,18 @@ namespace DownloadMananger.Tests
         [InlineData(10)]
         public async Task DownloadFileToLocalStorage(int expectedTasks)
         {
-            var currentIteration = 0;
-            var streamReadOutput = new[] {10, 20, 30, 20, 10, 10, 0};
+            const int bytesPerTask = 100;
 
-            _streamMock.SetupGet(m => m.Length).Returns(streamReadOutput.Sum());
-            _streamMock.Setup(m => m.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()))
-                .Returns(() => streamReadOutput[currentIteration++]);
-
-            _tasksRunner.Setup(m => m.RunTasks(It.IsAny<List<Func<long>>>()))
+            _tasksRunnerMock.Setup(m => m.RunTasks(It.IsAny<List<Func<long>>>()))
                 .Returns(() =>
                 {
                     var tcs = new TaskCompletionSource<long>();
-                    tcs.SetResult(streamReadOutput.Sum());
+                    tcs.SetResult(bytesPerTask);
                     return Enumerable.Repeat(tcs.Task, expectedTasks);
                 });
 
-            var actual = await _fileDownloader.DownloadFile(It.IsAny<Uri>(), _taskInformations.Take(expectedTasks));
-            actual.ShouldBeEquivalentTo(_streamMock.Object.Length * expectedTasks);
+            var actual = await _fileDownloaderManager.DownloadFile(It.IsAny<Uri>(), _taskInformations.Take(expectedTasks));
+            actual.ShouldBeEquivalentTo(bytesPerTask * expectedTasks);
         }
     }
 }
