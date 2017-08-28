@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DownloadManager.Factories;
 using DownloadManager.Models;
+using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal;
 
 namespace DownloadManager.Services.Impl
 {
@@ -19,11 +21,9 @@ namespace DownloadManager.Services.Impl
             _httpWebRequestFactory = httpWebRequestFactory;
             _tasksRunner = tasksRunner;
             _fileDownloader = fileDownloader;
-
-            _fileDownloader.BytesDownloadedChanged += FileDownloaderProgressUpdated;
         }
 
-        public List<Func<long>> DownloadingFunctions { get; } = new List<Func<long>>();
+        public List<Task<long>> DownloadingFunctions { get; } = new List<Task<long>>();
 
         public long TotalBytesDownloaded { get; private set; }
 
@@ -33,15 +33,10 @@ namespace DownloadManager.Services.Impl
             {
                 var request = _httpWebRequestFactory.CreateGetRangeRequest(url, taskInfo.BytesStart, taskInfo.BytesEnd);
 
-                DownloadingFunctions.Add(() => _fileDownloader.SaveFile(request.GetResponse(), taskInfo.FileName));
+                DownloadingFunctions.Add(_fileDownloader.SaveFile(request.GetResponse(), taskInfo.FileName));
             }
 
-            return (await Task.WhenAll(_tasksRunner.RunTasks(DownloadingFunctions))).Sum();
-        }
-
-        private void FileDownloaderProgressUpdated(object sender, DownloadProgress downloadProgress)
-        {
-            TotalBytesDownloaded += downloadProgress.BytesDownloaded;
+            return (await Task.WhenAll(DownloadingFunctions)).Sum();
         }
     }
 }

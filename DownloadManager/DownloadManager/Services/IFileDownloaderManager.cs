@@ -7,7 +7,7 @@ namespace DownloadManager.Services
 {
     public interface IFileDownloaderManager
     {
-        List<Func<long>> DownloadingFunctions { get; } 
+        List<Task<long>> DownloadingFunctions { get; } 
         long TotalBytesDownloaded { get;  }
         Task<long> DownloadFile(Uri url, IEnumerable<TaskInformation> informations);
     }
