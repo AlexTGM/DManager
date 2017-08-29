@@ -22,11 +22,11 @@ namespace DownloadManager.Controllers
             IFileInformationProvider fileInfoProvider = new FileInformationProvider(httpWebRequestFactory);
             IFile file = new FileWrap();
             IFileMerger fileMerger = new FileMerger(file, new BinaryReaderFactory(), new BinaryWriterFactory());
-            ITasksRunner tasksRunner = new TasksRunner();
             IDateTimeProvider dateTimeProvider = new DateTimeProvider();
             ITimerFactory timerFactory = new TimerFactory();
             IDownloadSpeedLimiter downloadSpeedLimiter = new DownloadSpeedLimiter(timerFactory, dateTimeProvider);
-            IFileDownloader fileDownloader = new FileDownloader(file, dateTimeProvider, downloadSpeedLimiter);
+            IDownloadSpeedMeter downloadSpeedMeter = new DownloadSpeedMeter(dateTimeProvider, timerFactory);
+            IFileDownloader fileDownloader = new FileDownloader(file, downloadSpeedMeter, downloadSpeedLimiter);
             IFileDownloaderManager fileDownloaderManager = new FileDownloaderManager(httpWebRequestFactory, fileDownloader);
             INameGeneratorService nameGeneratorService = new NameGeneratorService();
             IDownloadingTasksFactory downloadingTasksFactory = new DownloadingTasksFactory(nameGeneratorService);

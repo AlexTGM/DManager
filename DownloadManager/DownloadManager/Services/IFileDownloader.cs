@@ -12,6 +12,5 @@ namespace DownloadManager.Services
         bool IsPaused { get; set; }
 
         event EventHandler<DownloadProgress> BytesDownloadedChanged;
-        event EventHandler<DownloadSpeed> DownloadingSpeedChanged;
     }
 }
