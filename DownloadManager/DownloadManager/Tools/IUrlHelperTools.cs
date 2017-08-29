@@ -1,4 +1,4 @@
-namespace DownloadManager.Services
+namespace DownloadManager.Tools
 {
     public interface IUrlHelperTools
     {

@@ -2,14 +2,15 @@ using System.Collections.Generic;
 using System.Linq;
 using DownloadManager.Models;
 using DownloadManager.Services;
+using DownloadManager.Tools;
 
 namespace DownloadManager.Factories.Impl
 {
     public class DownloadingTasksFactory : IDownloadingTasksFactory
     {
-        private readonly INameGeneratorService _nameGeneratorService;
+        private readonly INameGenerator _nameGeneratorService;
 
-        public DownloadingTasksFactory(INameGeneratorService nameGeneratorService)
+        public DownloadingTasksFactory(INameGenerator nameGeneratorService)
         {
             _nameGeneratorService = nameGeneratorService;
         }

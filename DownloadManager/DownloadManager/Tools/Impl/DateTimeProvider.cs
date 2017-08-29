@@ -1,6 +1,6 @@
 using System;
 
-namespace DownloadManager.Services.Impl
+namespace DownloadManager.Tools.Impl
 {
     public class DateTimeProvider : IDateTimeProvider
     {

@@ -1,5 +1,7 @@
 using DownloadManager.Services;
 using DownloadManager.Services.Impl;
+using DownloadManager.Tools;
+using DownloadManager.Tools.Impl;
 using FluentAssertions;
 using Xunit;
 

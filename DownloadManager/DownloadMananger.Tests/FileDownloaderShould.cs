@@ -6,6 +6,7 @@ using SystemInterface.IO;
 using SystemInterface.Net;
 using DownloadManager.Services;
 using DownloadManager.Services.Impl;
+using DownloadManager.Tools;
 using FluentAssertions;
 using Moq;
 using Xunit;

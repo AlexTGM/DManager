@@ -1,6 +1,7 @@
 using System;
 using SystemInterface.Timers;
 using DownloadManager.Models;
+using DownloadManager.Tools;
 
 namespace DownloadManager.Services.Impl
 {

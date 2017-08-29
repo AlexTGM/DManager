@@ -1,7 +1,7 @@
 using System;
 using SystemInterface.IO;
 
-namespace DownloadManager.Services.Impl
+namespace DownloadManager.Tools.Impl
 {
     public class DataGenerator : IDataGenerator
     {

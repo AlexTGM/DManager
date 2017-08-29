@@ -1,5 +1,7 @@
 using DownloadManager.Services;
 using DownloadManager.Services.Impl;
+using DownloadManager.Tools;
+using DownloadManager.Tools.Impl;
 using FluentAssertions;
 using Xunit;
 
@@ -10,7 +12,7 @@ namespace DownloadMananger.Tests
         [Fact]
         public void CreateNameAccordingToPattern()
         {
-            INameGeneratorService nameGeneratorService = new NameGeneratorService();
+            INameGenerator nameGeneratorService = new NameGenerator();
 
             const int taskId = 0;
             const string fileName = "output";

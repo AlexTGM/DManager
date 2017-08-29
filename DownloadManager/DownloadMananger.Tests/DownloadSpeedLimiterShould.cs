@@ -3,6 +3,7 @@ using SystemInterface.Timers;
 using DownloadManager.Models;
 using DownloadManager.Services;
 using DownloadManager.Services.Impl;
+using DownloadManager.Tools;
 using FluentAssertions;
 using Moq;
 using Xunit;

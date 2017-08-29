@@ -4,6 +4,7 @@ using DownloadManager.Factories;
 using DownloadManager.Factories.Impl;
 using DownloadManager.Models;
 using DownloadManager.Services;
+using DownloadManager.Tools;
 using FluentAssertions;
 using Moq;
 using Xunit;
@@ -19,7 +20,7 @@ namespace DownloadMananger.Tests
 
         public DownloadingTasksFactoryShould()
         {
-            var nameGeneratorServiceMock = new Mock<INameGeneratorService>();
+            var nameGeneratorServiceMock = new Mock<INameGenerator>();
             nameGeneratorServiceMock.Setup(m => m.GenerateName(It.IsAny<string>(), It.IsAny<int>()))
                 .Returns((string fileName, int taskId) => $"{fileName}_{taskId}");
 

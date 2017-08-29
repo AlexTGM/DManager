@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using SystemInterface.Timers;
 using DownloadManager.Models;
+using DownloadManager.Tools;
 
 namespace DownloadManager.Services.Impl
 {

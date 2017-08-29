@@ -6,6 +6,8 @@ using DownloadManager.Factories;
 using DownloadManager.Factories.Impl;
 using DownloadManager.Services;
 using DownloadManager.Services.Impl;
+using DownloadManager.Tools;
+using DownloadManager.Tools.Impl;
 using Microsoft.AspNetCore.Mvc;
 
 using DManager = DownloadManager.Services.Impl.DownloadManager;
@@ -28,7 +30,7 @@ namespace DownloadManager.Controllers
             IDownloadSpeedMeter downloadSpeedMeter = new DownloadSpeedMeter(dateTimeProvider, timerFactory);
             IFileDownloader fileDownloader = new FileDownloader(file, downloadSpeedMeter, downloadSpeedLimiter);
             IFileDownloaderManager fileDownloaderManager = new FileDownloaderManager(httpWebRequestFactory, fileDownloader);
-            INameGeneratorService nameGeneratorService = new NameGeneratorService();
+            INameGenerator nameGeneratorService = new NameGenerator();
             IDownloadingTasksFactory downloadingTasksFactory = new DownloadingTasksFactory(nameGeneratorService);
             IDownloadManager downloadManager = new DManager(fileInfoProvider, fileMerger, fileDownloaderManager, downloadingTasksFactory);
 
