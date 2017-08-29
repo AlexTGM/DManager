@@ -32,7 +32,11 @@ namespace DownloadManager.Services.Impl
                 DownloadingFunctions.Add(_fileDownloader.SaveFile(request.GetResponse(), taskInfo.FileName));
             }
 
-            return TotalBytesDownloaded = (await Task.WhenAll(DownloadingFunctions)).Sum();
+            TotalBytesDownloaded = (await Task.WhenAll(DownloadingFunctions)).Sum();
+
+            _fileDownloader.Unsubscribe();
+
+            return TotalBytesDownloaded;
         }
     }
 }

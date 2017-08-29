@@ -10,21 +10,31 @@ namespace DownloadManager.Services.Impl
     public class FileDownloader : IFileDownloader
     {
         private readonly IFile _file;
+        private readonly IDownloadSpeedMeter _downloadSpeedMeter;
         private readonly IDownloadSpeedLimiter _downloadSpeedLimiter;
 
         public FileDownloader(IFile file, IDownloadSpeedMeter downloadSpeedMeter,
             IDownloadSpeedLimiter downloadSpeedLimiter)
         {
             _file = file;
+            _downloadSpeedMeter = downloadSpeedMeter;
             _downloadSpeedLimiter = downloadSpeedLimiter;
 
             _downloadSpeedLimiter.DownloadPerSecondThreshold = (long)625000;
 
             BytesDownloadedChanged += _downloadSpeedLimiter.FileDownloaderBytesDownloaded;
-            BytesDownloadedChanged += downloadSpeedMeter.FileDownloaderBytesDownloaded;
+            BytesDownloadedChanged += _downloadSpeedMeter.FileDownloaderBytesDownloaded;
 
-            downloadSpeedMeter.DownloadingSpeedChanged += (sender, speed) =>
-                Debug.WriteLine($"{DateTime.Now:O} speed: {speed.BytesPerSecond * 8e-6} mbits");
+            _downloadSpeedMeter.DownloadingSpeedChanged += PrintSpeedForTesting;
+
+        }
+
+        public void Unsubscribe()
+        {
+            BytesDownloadedChanged -= _downloadSpeedLimiter.FileDownloaderBytesDownloaded;
+            BytesDownloadedChanged -= _downloadSpeedMeter.FileDownloaderBytesDownloaded;
+
+            _downloadSpeedMeter.DownloadingSpeedChanged -= PrintSpeedForTesting;
         }
 
         public async Task<long> SaveFile(IHttpWebResponse response, string fileName)
@@ -56,6 +66,11 @@ namespace DownloadManager.Services.Impl
         public bool IsPaused { get; set; }
 
         public event EventHandler<DownloadProgress> BytesDownloadedChanged;
+
+        private void PrintSpeedForTesting(object sender, DownloadSpeed args)
+        {
+            Debug.WriteLine($"{DateTime.Now:O} speed: {args.BytesPerSecond * 8e-6} mbits");
+        }
 
         private DownloadProgress CreateProgress(string fileName, long bytesDownloaded)
             => new DownloadProgress {BytesDownloaded = bytesDownloaded, FileName = fileName};
