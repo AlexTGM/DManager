@@ -20,6 +20,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DownloadManager
 {
+    public class ApplicationOptions
+    {
+        public int DefaultThreadsPerDownload { get; set; } = 1;
+        public long DefaultThreasholdPerSecond { get; set; } = 0;
+    }
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -49,6 +55,8 @@ namespace DownloadManager
             services.AddScoped<IDownloadSpeedLimiter, DownloadSpeedLimiter>();
             services.AddScoped<IFileDownloaderManager, FileDownloaderManager>();
             services.AddScoped<IDownloadManager, Services.Impl.DownloadManager>();
+
+            services.Configure<ApplicationOptions>(Configuration);
             
             services.AddMvc();
         }

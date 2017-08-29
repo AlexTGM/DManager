@@ -13,15 +13,20 @@ namespace DownloadManager.Services.Impl
         private readonly AutoResetEvent _checkpoint = new AutoResetEvent(true);
 
         public bool IsPaused { get; private set; }
-        public long DownloadPerSecondThreshold { get; set; } = long.MaxValue;
+        public long DownloadPerSecondThreshold { get; set; }
         public long BytesDownloadedSinceLastCheckpoint { get; private set; }
 
         public DateTime CheckpointDateTime { get; private set; }
         public ITimer Timer { get; }
 
-        public DownloadSpeedLimiter(ITimerFactory timerFactory, IDateTimeProvider dateTimeProvider)
+        public DownloadSpeedLimiter(ITimerFactory timerFactory, 
+            IDateTimeProvider dateTimeProvider, ApplicationOptions options)
         {
             _dateTimeProvider = dateTimeProvider;
+
+            DownloadPerSecondThreshold = options.DefaultThreasholdPerSecond == 0
+                ? long.MaxValue
+                : options.DefaultThreasholdPerSecond;
 
             Timer = timerFactory.Create();
             Timer.AutoReset = false;

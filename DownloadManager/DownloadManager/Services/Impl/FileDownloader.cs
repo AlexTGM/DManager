@@ -26,7 +26,6 @@ namespace DownloadManager.Services.Impl
             BytesDownloadedChanged += _downloadSpeedMeter.FileDownloaderBytesDownloaded;
 
             _downloadSpeedMeter.DownloadingSpeedChanged += PrintSpeedForTesting;
-
         }
 
         public void Unsubscribe()
@@ -67,7 +66,7 @@ namespace DownloadManager.Services.Impl
 
         public event EventHandler<DownloadProgress> BytesDownloadedChanged;
 
-        private void PrintSpeedForTesting(object sender, DownloadSpeed args)
+        private static void PrintSpeedForTesting(object sender, DownloadSpeed args)
         {
             Debug.WriteLine($"{DateTime.Now:O} speed: {args.BytesPerSecond * 8e-6} mbits");
         }

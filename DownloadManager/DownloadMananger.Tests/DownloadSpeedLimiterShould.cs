@@ -1,5 +1,6 @@
 ﻿using System;
 using SystemInterface.Timers;
+using DownloadManager;
 using DownloadManager.Models;
 using DownloadManager.Services;
 using DownloadManager.Services.Impl;
@@ -34,7 +35,7 @@ namespace DownloadMananger.Tests
                 .Returns(new DateTime(2000, 1, 1, 0, 0, 1));
 
             _downloadSpeedLimiter =
-                new DownloadSpeedLimiter(_timerFactoryMock.Object, _dateTimeProviderMock.Object)
+                new DownloadSpeedLimiter(_timerFactoryMock.Object, _dateTimeProviderMock.Object, new ApplicationOptions())
                 {
                     DownloadPerSecondThreshold = _downloadPerSecondThreshold
                 };
