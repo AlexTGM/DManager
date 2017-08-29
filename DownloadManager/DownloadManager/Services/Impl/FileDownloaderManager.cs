@@ -1,25 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DownloadManager.Factories;
 using DownloadManager.Models;
-using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal;
 
 namespace DownloadManager.Services.Impl
 {
     public class FileDownloaderManager : IFileDownloaderManager
     {
         private readonly IHttpWebRequestFactory _httpWebRequestFactory;
-        private readonly ITasksRunner _tasksRunner;
         private readonly IFileDownloader _fileDownloader;
 
-        public FileDownloaderManager(IHttpWebRequestFactory httpWebRequestFactory, 
-            ITasksRunner tasksRunner, IFileDownloader fileDownloader)
+        public FileDownloaderManager(IHttpWebRequestFactory httpWebRequestFactory,
+            IFileDownloader fileDownloader)
         {
             _httpWebRequestFactory = httpWebRequestFactory;
-            _tasksRunner = tasksRunner;
             _fileDownloader = fileDownloader;
         }
 
@@ -36,7 +32,7 @@ namespace DownloadManager.Services.Impl
                 DownloadingFunctions.Add(_fileDownloader.SaveFile(request.GetResponse(), taskInfo.FileName));
             }
 
-            return (await Task.WhenAll(DownloadingFunctions)).Sum();
+            return TotalBytesDownloaded = (await Task.WhenAll(DownloadingFunctions)).Sum();
         }
     }
 }

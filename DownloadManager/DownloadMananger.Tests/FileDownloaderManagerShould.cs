@@ -18,7 +18,6 @@ namespace DownloadMananger.Tests
     {
         private readonly Mock<IHttpWebRequestFactory> _factoryMock;
         private readonly Mock<IHttpWebRequest> _httpWebRequestMock;
-        private readonly Mock<ITasksRunner> _tasksRunnerMock;
         private readonly Mock<IFileDownloader> _fileDownloaderMock;
         private readonly Mock<IHttpWebResponse> _httpWebResponseMock;
 
@@ -32,7 +31,6 @@ namespace DownloadMananger.Tests
 
             _factoryMock = new Mock<IHttpWebRequestFactory>();
             _httpWebRequestMock = new Mock<IHttpWebRequest>();
-            _tasksRunnerMock = new Mock<ITasksRunner>();
             _fileDownloaderMock = new Mock<IFileDownloader>();
             _httpWebResponseMock = new Mock<IHttpWebResponse>();
 
@@ -42,9 +40,10 @@ namespace DownloadMananger.Tests
             _factoryMock.Setup(m => m.CreateGetRangeRequest(It.IsAny<Uri>(), It.IsAny<long>(), It.IsAny<long>()))
                 .Returns(_httpWebRequestMock.Object);
 
-            _tasksRunnerMock.Setup(m => m.RunTasks(It.IsAny<Func<long>[]>()));
+            _fileDownloaderMock.Setup(m => m.SaveFile(_httpWebResponseMock.Object, It.IsAny<string>()))
+                .Returns(async () => 100L);
 
-            _fileDownloaderManager = new FileDownloaderManager(_factoryMock.Object, _tasksRunnerMock.Object, _fileDownloaderMock.Object);
+            _fileDownloaderManager = new FileDownloaderManager(_factoryMock.Object, _fileDownloaderMock.Object);
         }
 
         [Fact]
@@ -63,14 +62,6 @@ namespace DownloadMananger.Tests
         public async Task DownloadFileToLocalStorage(int expectedTasks)
         {
             const int bytesPerTask = 100;
-
-            _tasksRunnerMock.Setup(m => m.RunTasks(It.IsAny<List<Func<long>>>()))
-                .Returns(() =>
-                {
-                    var tcs = new TaskCompletionSource<long>();
-                    tcs.SetResult(bytesPerTask);
-                    return Enumerable.Repeat(tcs.Task, expectedTasks);
-                });
 
             var actual = await _fileDownloaderManager.DownloadFile(It.IsAny<Uri>(), _taskInformations.Take(expectedTasks));
             actual.ShouldBeEquivalentTo(bytesPerTask * expectedTasks);

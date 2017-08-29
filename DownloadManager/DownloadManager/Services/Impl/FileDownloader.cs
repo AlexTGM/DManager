@@ -1,14 +1,9 @@
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using SystemInterface.IO;
 using SystemInterface.Net;
 using DownloadManager.Models;
-using Timer = System.Threading.Timer;
 
 namespace DownloadManager.Services.Impl
 {
@@ -16,66 +11,18 @@ namespace DownloadManager.Services.Impl
     {
         private readonly IFile _file;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly IDownloadSpeedLimiter _downloadSpeedLimiter;
 
-        public FileDownloader(IFile file, IDateTimeProvider dateTimeProvider)
+        public FileDownloader(IFile file, IDateTimeProvider dateTimeProvider,
+            IDownloadSpeedLimiter downloadSpeedLimiter)
         {
             _file = file;
             _dateTimeProvider = dateTimeProvider;
+            _downloadSpeedLimiter = downloadSpeedLimiter;
 
-            BytesDownloadedChanged += FileDownloader_BytesDownloadedChanged;
+            _downloadSpeedLimiter.DownloadPerSecondThreshold = (long)2.5e+6;
 
-            timer = new Timer(state =>
-            {
-                Write($"{DateTime.Now:O} ===== Checkpoint reached");
-                _checkpoint = DateTime.Now;
-                IsPaused = false;
-            });
-
-            _checkpoint = DateTime.Now;
-        }
-
-        private DateTime _checkpoint;
-        private long _bytesFromLastCheckpointDownloaded;
-
-        Timer timer = null;
-
-        private void FileDownloader_BytesDownloadedChanged(object sender, DownloadProgress e)
-        {
-            var time = DateTime.Now - _checkpoint;
-            var timeToWait = Math.Max(0L, (long)(1000 - time.TotalMilliseconds));
-
-            if (time.TotalMilliseconds >= 1000)
-            {
-                _checkpoint = DateTime.Now;
-                _bytesFromLastCheckpointDownloaded = 0;
-            }
-
-            _bytesFromLastCheckpointDownloaded += e.BytesDownloaded;
-
-            Write($"{DateTime.Now:O} timeFromLastCheckpoint: {time.TotalMilliseconds} || timeToWait: {timeToWait} ||" +
-                  $"downloaded: {_bytesFromLastCheckpointDownloaded}");
-
-            if (_bytesFromLastCheckpointDownloaded < 1000000) return;
-
-            IsPaused = true;
-            _bytesFromLastCheckpointDownloaded = 0;
-
-            Write($"{DateTime.Now:O} ===== Limit Is Reached!");
-
-            timer.Change(timeToWait, Timeout.Infinite);
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        AutoResetEvent writeResetEvent = new AutoResetEvent(true);
-
-        private void Write(string str)
-        {
-            writeResetEvent.WaitOne();
-
-            sb.AppendLine(str);
-
-            writeResetEvent.Set();
+            BytesDownloadedChanged += _downloadSpeedLimiter.FileDownloaderBytesDownloaded;
         }
 
         public async Task<long> SaveFile(IHttpWebResponse response, string fileName)
@@ -101,7 +48,7 @@ namespace DownloadManager.Services.Impl
                         var progress = new DownloadProgress { BytesDownloaded = bytesRead, FileName = fileName };
                         BytesDownloadedChanged?.Invoke(this, progress);
 
-                        while (IsPaused)
+                        while (_downloadSpeedLimiter.IsPaused)
                         {
                             await Task.Delay(10);
                         }
@@ -131,7 +78,6 @@ namespace DownloadManager.Services.Impl
 
             Debug.WriteLine($"{averageSpeed}");
 
-            File.AppendAllText($"{fileName}_output.txt", sb.ToString());
             return totalBytesWritten;
         }
 

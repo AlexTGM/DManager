@@ -1,5 +1,7 @@
 ﻿using SystemInterface.IO;
+using SystemInterface.Timers;
 using SystemWrapper.IO;
+using SystemWrapper.Timers;
 using DownloadManager.Factories;
 using DownloadManager.Factories.Impl;
 using DownloadManager.Services;
@@ -22,8 +24,10 @@ namespace DownloadManager.Controllers
             IFileMerger fileMerger = new FileMerger(file, new BinaryReaderFactory(), new BinaryWriterFactory());
             ITasksRunner tasksRunner = new TasksRunner();
             IDateTimeProvider dateTimeProvider = new DateTimeProvider();
-            IFileDownloader fileDownloader = new FileDownloader(file, dateTimeProvider);
-            IFileDownloaderManager fileDownloaderManager = new FileDownloaderManager(httpWebRequestFactory, tasksRunner, fileDownloader);
+            ITimerFactory timerFactory = new TimerFactory();
+            IDownloadSpeedLimiter downloadSpeedLimiter = new DownloadSpeedLimiter(timerFactory, dateTimeProvider);
+            IFileDownloader fileDownloader = new FileDownloader(file, dateTimeProvider, downloadSpeedLimiter);
+            IFileDownloaderManager fileDownloaderManager = new FileDownloaderManager(httpWebRequestFactory, fileDownloader);
             INameGeneratorService nameGeneratorService = new NameGeneratorService();
             IDownloadingTasksFactory downloadingTasksFactory = new DownloadingTasksFactory(nameGeneratorService);
             IDownloadManager downloadManager = new DManager(fileInfoProvider, fileMerger, fileDownloaderManager, downloadingTasksFactory);
