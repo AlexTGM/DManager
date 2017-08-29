@@ -38,59 +38,5 @@ namespace DownloadManager.Services.Impl
                 }
             }
         }
-
-        //public class FileMergerShould
-        //{
-        //    private readonly Mock<IBinaryReaderFactory> _binaryReaderFactory;
-        //    private readonly Mock<IBinaryWriterFactory> _binaryWriterFactory;
-        //    private readonly Mock<IFile> _file;
-
-        //    public FileMergerShould()
-        //    {
-        //        _file = new Mock<IFile>();
-        //        _file.Setup(m => m.Create(It.IsAny<string>()));
-        //        _file.Setup(m => m.OpenRead(It.IsAny<string>()));
-
-        //        _binaryWriterFactory = new Mock<IBinaryWriterFactory>();
-        //        _binaryReaderFactory = new Mock<IBinaryReaderFactory>();
-        //    }
-
-        //    [Fact]
-        //    public void MergePartialContentInOneFile()
-        //    {
-        //        var currentFile = 0;
-        //        var files = new[] {"1", "2", "3", "4"};
-        //        var contents = new[] {"a", "b", "c", "d"};
-
-        //        var expectedContent = Encoding.UTF8.GetBytes("abcd");
-        //        var actualContent = Enumerable.Empty<byte>();
-
-        //        IFileMerger fileMerger = new FileMerger(_file.Object, _binaryReaderFactory.Object, _binaryWriterFactory.Object);
-
-        //        var binaryReader = new Mock<IBinaryReader>();
-        //        var stream = new Mock<Stream>();
-        //        stream.SetupGet(m => m.Length).Returns(1);
-        //        stream.SetupSet(m => m.Position = 1);
-        //        binaryReader.SetupGet(m => m.BaseStream).Returns(stream.Object);
-        //        binaryReader.Setup(m => m.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()));
-
-        //        var binaryWriter = new Mock<IBinaryWriter>();
-        //        binaryWriter.Setup(m => m.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()))
-        //            .Callback(() =>
-        //            {
-        //                stream.Object.Position = 1;
-        //                actualContent = actualContent.Concat(Encoding.UTF8.GetBytes(contents[currentFile++]));
-        //            });
-
-        //        _binaryWriterFactory.Setup(m => m.Create(It.IsAny<IStream>())).Returns(binaryWriter.Object);
-        //        _binaryReaderFactory.Setup(m => m.Create(It.IsAny<IStream>())).Returns(() =>
-        //        {
-        //            binaryReader.Reset();
-        //            return binaryReader.Object;
-        //        });
-
-        //        fileMerger.Merge(files, It.IsAny<string>());
-        //    }
-        //}
     }
 }

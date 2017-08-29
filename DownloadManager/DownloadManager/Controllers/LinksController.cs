@@ -1,40 +1,25 @@
-﻿using SystemInterface.IO;
-using SystemInterface.Timers;
-using SystemWrapper.IO;
-using SystemWrapper.Timers;
-using DownloadManager.Factories;
-using DownloadManager.Factories.Impl;
-using DownloadManager.Services;
-using DownloadManager.Services.Impl;
+﻿using DownloadManager.Services;
 using DownloadManager.Tools;
-using DownloadManager.Tools.Impl;
 using Microsoft.AspNetCore.Mvc;
-
-using DManager = DownloadManager.Services.Impl.DownloadManager;
 
 namespace DownloadManager.Controllers
 {
     [Route("api/[controller]")]
     public class LinksController : Controller
     {
+        private readonly IDownloadManager _downloadManager;
+        private readonly IUrlHelperTools _urlHelperTools;
+
+        public LinksController(IDownloadManager downloadManager, IUrlHelperTools urlHelperTools)
+        {
+            _downloadManager = downloadManager;
+            _urlHelperTools = urlHelperTools;
+        }
+
         [HttpGet("{url}")]
         public void Get(string url)
         {
-            IHttpWebRequestFactory httpWebRequestFactory = new HttpWebRequestFactory();
-            IFileInformationProvider fileInfoProvider = new FileInformationProvider(httpWebRequestFactory);
-            IFile file = new FileWrap();
-            IFileMerger fileMerger = new FileMerger(file, new BinaryReaderFactory(), new BinaryWriterFactory());
-            IDateTimeProvider dateTimeProvider = new DateTimeProvider();
-            ITimerFactory timerFactory = new TimerFactory();
-            IDownloadSpeedLimiter downloadSpeedLimiter = new DownloadSpeedLimiter(timerFactory, dateTimeProvider);
-            IDownloadSpeedMeter downloadSpeedMeter = new DownloadSpeedMeter(dateTimeProvider, timerFactory);
-            IFileDownloader fileDownloader = new FileDownloader(file, downloadSpeedMeter, downloadSpeedLimiter);
-            IFileDownloaderManager fileDownloaderManager = new FileDownloaderManager(httpWebRequestFactory, fileDownloader);
-            INameGenerator nameGeneratorService = new NameGenerator();
-            IDownloadingTasksFactory downloadingTasksFactory = new DownloadingTasksFactory(nameGeneratorService);
-            IDownloadManager downloadManager = new DManager(fileInfoProvider, fileMerger, fileDownloaderManager, downloadingTasksFactory);
-
-            downloadManager.DownloadFile(new UrlHelperTools().UrlDecode(url), 8);
+            _downloadManager.DownloadFile(_urlHelperTools.UrlDecode(url), 8);
         }
     }
 }
