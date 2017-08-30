@@ -38,6 +38,8 @@ namespace DownloadManager
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<ApplicationOptions>(Configuration);
+
             services.AddSingleton<IFile, FileWrap>();
             services.AddSingleton<IFileMerger, FileMerger>();
             services.AddSingleton<ITimerFactory, TimerFactory>();
@@ -55,8 +57,6 @@ namespace DownloadManager
             services.AddScoped<IDownloadSpeedLimiter, DownloadSpeedLimiter>();
             services.AddScoped<IFileDownloaderManager, FileDownloaderManager>();
             services.AddScoped<IDownloadManager, Services.Impl.DownloadManager>();
-
-            services.Configure<ApplicationOptions>(Configuration);
             
             services.AddMvc();
         }

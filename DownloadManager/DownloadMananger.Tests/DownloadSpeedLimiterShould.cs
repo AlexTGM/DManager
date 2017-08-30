@@ -6,6 +6,7 @@ using DownloadManager.Services;
 using DownloadManager.Services.Impl;
 using DownloadManager.Tools;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -16,6 +17,7 @@ namespace DownloadMananger.Tests
         private readonly Mock<ITimer> _timerMock = new Mock<ITimer>();
         private readonly Mock<ITimerFactory> _timerFactoryMock = new Mock<ITimerFactory>();
         private readonly Mock<IDateTimeProvider> _dateTimeProviderMock = new Mock<IDateTimeProvider>();
+        private readonly Mock<IOptions<ApplicationOptions>> _optionsMock = new Mock<IOptions<ApplicationOptions>>();
 
         private readonly IDownloadSpeedLimiter _downloadSpeedLimiter;
 
@@ -34,8 +36,10 @@ namespace DownloadMananger.Tests
                 .Returns(new DateTime(2000, 1, 1, 0, 0, 1))
                 .Returns(new DateTime(2000, 1, 1, 0, 0, 1));
 
+            _optionsMock.SetupGet(m => m.Value).Returns(new ApplicationOptions());
+
             _downloadSpeedLimiter =
-                new DownloadSpeedLimiter(_timerFactoryMock.Object, _dateTimeProviderMock.Object, new ApplicationOptions())
+                new DownloadSpeedLimiter(_timerFactoryMock.Object, _dateTimeProviderMock.Object, _optionsMock.Object)
                 {
                     DownloadPerSecondThreshold = _downloadPerSecondThreshold
                 };

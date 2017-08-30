@@ -3,6 +3,7 @@ using System.Threading;
 using SystemInterface.Timers;
 using DownloadManager.Models;
 using DownloadManager.Tools;
+using Microsoft.Extensions.Options;
 
 namespace DownloadManager.Services.Impl
 {
@@ -20,13 +21,13 @@ namespace DownloadManager.Services.Impl
         public ITimer Timer { get; }
 
         public DownloadSpeedLimiter(ITimerFactory timerFactory, 
-            IDateTimeProvider dateTimeProvider, ApplicationOptions options)
+            IDateTimeProvider dateTimeProvider, IOptions<ApplicationOptions> options)
         {
             _dateTimeProvider = dateTimeProvider;
 
-            DownloadPerSecondThreshold = options.DefaultThreasholdPerSecond == 0
+            DownloadPerSecondThreshold = options.Value.DefaultThreasholdPerSecond == 0
                 ? long.MaxValue
-                : options.DefaultThreasholdPerSecond;
+                : options.Value.DefaultThreasholdPerSecond;
 
             Timer = timerFactory.Create();
             Timer.AutoReset = false;

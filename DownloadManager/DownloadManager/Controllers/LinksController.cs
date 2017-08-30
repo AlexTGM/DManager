@@ -1,6 +1,7 @@
 ﻿using DownloadManager.Services;
 using DownloadManager.Tools;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace DownloadManager.Controllers
 {
@@ -12,11 +13,11 @@ namespace DownloadManager.Controllers
         private readonly ApplicationOptions _options;
 
         public LinksController(IDownloadManager downloadManager, 
-            IUrlHelperTools urlHelperTools, ApplicationOptions options)
+            IUrlHelperTools urlHelperTools, IOptions<ApplicationOptions> options)
         {
             _downloadManager = downloadManager;
             _urlHelperTools = urlHelperTools;
-            _options = options;
+            _options = options.Value;
         }
 
         [HttpGet("{url}")]
