@@ -7,7 +7,7 @@ namespace DownloadManager.Services
 {
     public interface IFileDownloader
     {
-        Task<long> SaveFile(IHttpWebResponse response, string fileName);
+        Task<long> SaveFile(IHttpWebResponse response, TaskInformation taskInformation);
         void Unsubscribe();
 
         bool IsPaused { get; set; }

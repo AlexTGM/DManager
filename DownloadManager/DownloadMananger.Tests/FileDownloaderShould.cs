@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SystemInterface.IO;
 using SystemInterface.Net;
+using DownloadManager.Models;
 using DownloadManager.Services;
 using DownloadManager.Services.Impl;
 using DownloadManager.Tools;
@@ -34,7 +35,7 @@ namespace DownloadMananger.Tests
             _httpWebResponseMock.Setup(m => m.GetResponseStream()).Returns(_streamMock.Object);
             _dateTimeProviderMock.Setup(m => m.GetCurrentDateTime());
 
-            _fileDownloader = new FileDownloader(_fileMock.Object, _downloadSpeedMeterMock.Object, _downloadSpeedLimiterMock.Object);
+            _fileDownloader = new FileDownloader(_fileMock.Object, _downloadSpeedMeterMock.Object, _downloadSpeedLimiterMock.Object, null);
         }
 
         [Fact]
@@ -47,7 +48,7 @@ namespace DownloadMananger.Tests
             _streamMock.Setup(m => m.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()))
                 .Returns(() => streamReadOutput[currentIteration++]);
             
-            var fileSize = await _fileDownloader.SaveFile(_httpWebResponseMock.Object, It.IsAny<string>());
+            var fileSize = await _fileDownloader.SaveFile(_httpWebResponseMock.Object, It.IsAny<TaskInformation>());
 
             fileSize.ShouldBeEquivalentTo(streamReadOutput.Sum());
         }
@@ -65,7 +66,7 @@ namespace DownloadMananger.Tests
             
             _fileDownloader.BytesDownloadedChanged += (sender, progress) => totalBytesDownloaded += progress.BytesDownloaded;
 
-            _fileDownloader.SaveFile(_httpWebResponseMock.Object, It.IsAny<string>());
+            _fileDownloader.SaveFile(_httpWebResponseMock.Object, It.IsAny<TaskInformation>());
 
             totalBytesDownloaded.ShouldBeEquivalentTo(streamReadOutput.Sum());
         }

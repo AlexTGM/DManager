@@ -94,7 +94,7 @@ namespace DownloadMananger.Tests
         {
             _downloadSpeedMeter.DownloadingSpeedChanged += (sender, speed) => speed.BytesPerSecond.ShouldBeEquivalentTo(1000);
             
-            _downloadSpeedMeter.FileDownloaderBytesDownloaded(null, new DownloadProgress { FileName = "test", BytesDownloaded = 1000 });
+            _downloadSpeedMeter.FileDownloaderBytesDownloaded(null, new DownloadProgress { TaskInformation = null, BytesDownloaded = 1000 });
 
             _timerMock.Raise(m => m.Elapsed += null, It.IsAny<object>(), It.IsAny<ElapsedEventArgs>());
         }

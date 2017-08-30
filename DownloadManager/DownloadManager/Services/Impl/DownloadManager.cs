@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DownloadManager.Controllers;
 using DownloadManager.Factories;
 using DownloadManager.Models;
 
@@ -33,6 +34,8 @@ namespace DownloadManager.Services.Impl
 
             var fileInfo = _fileInfoProvider.ObtainInformation(uri);
             Tasks = _downloadingTasksFactory.Create(fileInfo, tasksCount).ToList();
+
+            //return new DownloadLinkResponse{FilesNames = Tasks.Select(task => task.FileName).ToArray()};
 
             await _fileDownloaderManager.DownloadFile(uri, Tasks);
 

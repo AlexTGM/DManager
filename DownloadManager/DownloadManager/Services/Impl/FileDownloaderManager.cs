@@ -29,7 +29,7 @@ namespace DownloadManager.Services.Impl
             {
                 var request = _httpWebRequestFactory.CreateGetRangeRequest(url, taskInfo.BytesStart, taskInfo.BytesEnd);
 
-                DownloadingFunctions.Add(_fileDownloader.SaveFile(request.GetResponse(), taskInfo.FileName));
+                DownloadingFunctions.Add(_fileDownloader.SaveFile(request.GetResponse(), taskInfo));
             }
 
             TotalBytesDownloaded = (await Task.WhenAll(DownloadingFunctions)).Sum();

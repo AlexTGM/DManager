@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using SystemInterface.IO;
 using SystemInterface.Timers;
 using SystemWrapper.IO;
@@ -12,8 +10,10 @@ using DownloadManager.Services;
 using DownloadManager.Services.Impl;
 using DownloadManager.Tools;
 using DownloadManager.Tools.Impl;
+using Lib.AspNetCore.ServerSentEvents;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +38,14 @@ namespace DownloadManager
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddResponseCompression(options =>
+            {
+                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "text/event-stream" });
+            });
+
+            services.AddServerSentEvents();
+            services.AddServerSentEvents<IServerSentEventsService, ServerSentEventsService>();
+
             services.Configure<ApplicationOptions>(Configuration);
 
             services.AddSingleton<IFile, FileWrap>();
@@ -62,7 +70,7 @@ namespace DownloadManager
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -76,6 +84,10 @@ namespace DownloadManager
             {
                 app.UseExceptionHandler("/Home/Error");
             }
+
+            app.UseResponseCompression();
+
+            app.MapServerSentEvents("/api/sse-notifications", serviceProvider.GetService<ServerSentEventsService>());
 
             app.UseStaticFiles();
 

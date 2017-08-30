@@ -1,9 +1,9 @@
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using SystemInterface.IO;
 using SystemInterface.Net;
 using DownloadManager.Models;
+using Lib.AspNetCore.ServerSentEvents;
 
 namespace DownloadManager.Services.Impl
 {
@@ -12,20 +12,23 @@ namespace DownloadManager.Services.Impl
         private readonly IFile _file;
         private readonly IDownloadSpeedMeter _downloadSpeedMeter;
         private readonly IDownloadSpeedLimiter _downloadSpeedLimiter;
+        private readonly IServerSentEventsService _serverSentEventsService;
 
-        public FileDownloader(IFile file, IDownloadSpeedMeter downloadSpeedMeter,
-            IDownloadSpeedLimiter downloadSpeedLimiter)
+        public FileDownloader(IFile file, IDownloadSpeedMeter downloadSpeedMeter, 
+            IDownloadSpeedLimiter downloadSpeedLimiter, IServerSentEventsService serverSentEventsService)
         {
             _file = file;
             _downloadSpeedMeter = downloadSpeedMeter;
             _downloadSpeedLimiter = downloadSpeedLimiter;
+            _serverSentEventsService = serverSentEventsService;
 
             _downloadSpeedLimiter.DownloadPerSecondThreshold = (long)625000;
 
             BytesDownloadedChanged += _downloadSpeedLimiter.FileDownloaderBytesDownloaded;
             BytesDownloadedChanged += _downloadSpeedMeter.FileDownloaderBytesDownloaded;
 
-            _downloadSpeedMeter.DownloadingSpeedChanged += PrintSpeedForTesting;
+            TotalProgressChanged += DownloadingProgressChanged;
+            _downloadSpeedMeter.DownloadingSpeedChanged += DownloadingSpeedChanged;
         }
 
         public void Unsubscribe()
@@ -33,15 +36,16 @@ namespace DownloadManager.Services.Impl
             BytesDownloadedChanged -= _downloadSpeedLimiter.FileDownloaderBytesDownloaded;
             BytesDownloadedChanged -= _downloadSpeedMeter.FileDownloaderBytesDownloaded;
 
-            _downloadSpeedMeter.DownloadingSpeedChanged -= PrintSpeedForTesting;
+            TotalProgressChanged -= DownloadingProgressChanged;
+            _downloadSpeedMeter.DownloadingSpeedChanged -= DownloadingSpeedChanged;
         }
 
-        public async Task<long> SaveFile(IHttpWebResponse response, string fileName)
+        public async Task<long> SaveFile(IHttpWebResponse response, TaskInformation taskInformation)
         {
             var buffer = new byte[524288];
             var totalBytesWritten = 0L;
 
-            using (var fileStream = _file.OpenWrite(fileName))
+            using (var fileStream = _file.OpenWrite(taskInformation.FileName))
             {
                 using (var stream = response.GetResponseStream())
                 {
@@ -49,12 +53,14 @@ namespace DownloadManager.Services.Impl
 
                     while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
                     {
-                        BytesDownloadedChanged?.Invoke(this, CreateProgress(fileName, bytesRead));
+                        BytesDownloadedChanged?.Invoke(this, CreateProgress(taskInformation, bytesRead));
 
                         while (_downloadSpeedLimiter.IsPaused) await Task.Delay(10);
 
                         fileStream.Write(buffer, 0, bytesRead);
+
                         totalBytesWritten += bytesRead;
+                        TotalProgressChanged?.Invoke(this, CreateTotal(taskInformation, totalBytesWritten));
                     }
                 }
             }
@@ -63,15 +69,34 @@ namespace DownloadManager.Services.Impl
         }
 
         public bool IsPaused { get; set; }
-
+        
         public event EventHandler<DownloadProgress> BytesDownloadedChanged;
-
-        private static void PrintSpeedForTesting(object sender, DownloadSpeed args)
+        public event EventHandler<TotalProgress> TotalProgressChanged;
+        
+        private void DownloadingSpeedChanged(object sender, DownloadSpeed args)
         {
-            Debug.WriteLine($"{DateTime.Now:O} speed: {args.BytesPerSecond * 8e-6} mbits");
+            var ev = new ServerSentEvent { Id = "speed", Data = new[] { $"{args.BytesPerSecond}" } };
+
+            _serverSentEventsService.SendEventAsync(ev);
         }
 
-        private DownloadProgress CreateProgress(string fileName, long bytesDownloaded)
-            => new DownloadProgress {BytesDownloaded = bytesDownloaded, FileName = fileName};
+        private void DownloadingProgressChanged(object sender, TotalProgress args)
+        {
+            var ev = new ServerSentEvent
+            {
+                Id = $"{args.TaskInformation.FileName}", Data = new[]
+                {
+                    $"{args.TotalBytesDownloaded} / {args.TaskInformation.BytesEnd - args.TaskInformation.BytesStart + 1} bytes"
+                }
+            };
+
+            _serverSentEventsService.SendEventAsync(ev);
+        }
+
+        private TotalProgress CreateTotal(TaskInformation taskInformation, long progress)
+            => new TotalProgress {TaskInformation = taskInformation, TotalBytesDownloaded = progress};
+
+        private DownloadProgress CreateProgress(TaskInformation taskInformation, long bytesDownloaded)
+            => new DownloadProgress {BytesDownloaded = bytesDownloaded, TaskInformation = taskInformation };
     }
 }

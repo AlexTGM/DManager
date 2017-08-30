@@ -1,4 +1,6 @@
-﻿using DownloadManager.Services;
+﻿using System.Collections.Generic;
+using System.Linq;
+using DownloadManager.Services;
 using DownloadManager.Tools;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -27,12 +29,13 @@ namespace DownloadManager.Controllers
 
             _downloadManager.DownloadFile(_urlHelperTools.UrlDecode(request.Url), threadsPerDownload);
 
-            return new DownloadLinkResponse();
+            return new DownloadLinkResponse {FilesNames = _downloadManager.Tasks.Select(task => task.FileName)};
         }
     }
 
     public class DownloadLinkResponse
     {
+        public IEnumerable<string> FilesNames;
     }
 
     public class DownloadLinkRequest
