@@ -5,12 +5,15 @@ import { Http } from '@angular/http';
     selector: 'files',
     templateUrl: './files.component.html'
 }) export class FilesComponent {
-    public link : String;
+    public link : string;
 
     constructor(private http: Http, @Inject('ORIGIN_URL') private originUrl: string) { }
 
     public start() {
-        this.http.get(this.originUrl + '/api/Links/LinkDownload').subscribe(result => {
+        let body: any = { "url": this.link, "threads": 8 }; 
+
+        this.http.post(this.originUrl + '/api/Links', body).subscribe(result => {
+            console.log(result);
         });
     }
 }

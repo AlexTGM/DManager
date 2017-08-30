@@ -20,12 +20,24 @@ namespace DownloadManager.Controllers
             _options = options.Value;
         }
 
-        [HttpGet("{url}")]
-        public void Get(string url)
+        [HttpPost]
+        public DownloadLinkResponse Post([FromBody]DownloadLinkRequest request)
         {
-            var threadsPerDownload = _options.DefaultThreadsPerDownload;
+            var threadsPerDownload = request.Threads ?? _options.DefaultThreadsPerDownload;
 
-            _downloadManager.DownloadFile(_urlHelperTools.UrlDecode(url), threadsPerDownload);
+            _downloadManager.DownloadFile(_urlHelperTools.UrlDecode(request.Url), threadsPerDownload);
+
+            return new DownloadLinkResponse();
         }
+    }
+
+    public class DownloadLinkResponse
+    {
+    }
+
+    public class DownloadLinkRequest
+    {
+        public string Url { get; set; }
+        public int? Threads { get; set; }
     }
 }
