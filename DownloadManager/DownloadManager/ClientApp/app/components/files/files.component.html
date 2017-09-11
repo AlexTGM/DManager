@@ -1,6 +1,8 @@
 ﻿<p>Paste link</p>
 
-<input type="text" [(ngModel)]="link" />
+<input type="text" [(ngModel)]="link" placeholder="link to download"/>
+<input type="number" [(ngModel)]="threads" placeholder="threads count limit"/>
+<input type="number" [(ngModel)]="bytes" placeholder="bytes per second linit"/>
 <input type="button" (click)="start()" value="Click Me" />
 
 <hr/>

@@ -12,6 +12,8 @@ class FileInfo {
 })
 export class FilesComponent {
     public link: string;
+    public threads: number;
+    public bytes: number;
 
     files: string;
     files1: string[] = [];
@@ -24,7 +26,7 @@ export class FilesComponent {
     }
 
     public start() {
-        let body: any = { "url": this.link, "threads": 8 };
+        let body: any = { "url": this.link, "threads": this.threads, "speed": this.bytes };
 
         var self = this;
 

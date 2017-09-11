@@ -24,6 +24,8 @@ namespace DownloadManager
     {
         public int DefaultThreadsPerDownload { get; set; } = 1;
         public long DefaultThreasholdPerSecond { get; set; } = 0;
+        public long BytesPerSecond { get; set; }
+        public int ThreadsPerDownload { get; set; }
     }
 
     public class Startup

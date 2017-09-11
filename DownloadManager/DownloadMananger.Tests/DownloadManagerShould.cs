@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DownloadManager;
 using DownloadManager.Factories;
 using DownloadManager.Models;
 using DownloadManager.Services;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -33,12 +35,15 @@ namespace DownloadMananger.Tests
             _fileMergerMock.Setup(m => m.Merge(It.IsAny<string[]>(), It.IsAny<string>()));
             _downloadingTasksFactoryMock.Setup(m => m.Create(It.IsAny<FileInformation>(), It.IsAny<int>()));
 
+            var optionsMock = new Mock<IOptions<ApplicationOptions>>();
+            optionsMock.SetupGet(m => m.Value).Returns(new ApplicationOptions());
+
             _downloadManager = new DownloadManager.Services.Impl.DownloadManager(_fileInfoProviderMock.Object,
-                _fileMergerMock.Object, _fileDownloaderMock.Object, _downloadingTasksFactoryMock.Object);
+                _fileMergerMock.Object, _fileDownloaderMock.Object, _downloadingTasksFactoryMock.Object, optionsMock.Object);
         }
 
         [Fact]
-        public async Task ShouldMergeFilesAfterDownloading()
+        public void ShouldMergeFilesAfterDownloading()
         {
             const string output = "output";
             var partialFiles = new[] { $"{output}_0", $"{output}_1" };
@@ -52,9 +57,9 @@ namespace DownloadMananger.Tests
             _downloadingTasksFactoryMock.Setup(m => m.Create(It.IsAny<FileInformation>(), It.IsAny<int>()))
                 .Returns(fileInfos);
 
-            await _downloadManager.DownloadFile("output", 2);
+            var fileNames = _downloadManager.DownloadFile("output");
 
-            _fileMergerMock.Verify(m => m.Merge(partialFiles, output), Times.Once);
+            _fileMergerMock.Verify(m => m.Merge(fileNames, output), Times.Once);
         }
     }
 }

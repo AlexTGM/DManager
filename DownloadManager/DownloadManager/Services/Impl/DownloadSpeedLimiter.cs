@@ -68,7 +68,7 @@ namespace DownloadManager.Services.Impl
             IsPaused = true;
             BytesDownloadedSinceLastCheckpoint = 0L;
 
-            Timer.Interval = milliseconds;
+            Timer.Interval = Math.Abs(milliseconds) < 0.001 ? 1 : milliseconds;
             Timer.Start();
         }
     }

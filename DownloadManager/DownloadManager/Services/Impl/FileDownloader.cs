@@ -1,28 +1,34 @@
 using System;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using SystemInterface.IO;
 using SystemInterface.Net;
 using DownloadManager.Models;
 using Lib.AspNetCore.ServerSentEvents;
+using Microsoft.Extensions.Options;
 
 namespace DownloadManager.Services.Impl
 {
     public class FileDownloader : IFileDownloader
     {
+        private AutoResetEvent autoResetEvent = new AutoResetEvent(true);
+
         private readonly IFile _file;
         private readonly IDownloadSpeedMeter _downloadSpeedMeter;
         private readonly IDownloadSpeedLimiter _downloadSpeedLimiter;
         private readonly IServerSentEventsService _serverSentEventsService;
 
         public FileDownloader(IFile file, IDownloadSpeedMeter downloadSpeedMeter, 
-            IDownloadSpeedLimiter downloadSpeedLimiter, IServerSentEventsService serverSentEventsService)
+            IDownloadSpeedLimiter downloadSpeedLimiter, IServerSentEventsService serverSentEventsService,
+            IOptions<ApplicationOptions> applicationOptions)
         {
             _file = file;
             _downloadSpeedMeter = downloadSpeedMeter;
             _downloadSpeedLimiter = downloadSpeedLimiter;
             _serverSentEventsService = serverSentEventsService;
 
-            _downloadSpeedLimiter.DownloadPerSecondThreshold = (long)625000;
+            _downloadSpeedLimiter.DownloadPerSecondThreshold = applicationOptions.Value.BytesPerSecond;
 
             BytesDownloadedChanged += _downloadSpeedLimiter.FileDownloaderBytesDownloaded;
             BytesDownloadedChanged += _downloadSpeedMeter.FileDownloaderBytesDownloaded;
@@ -77,20 +83,28 @@ namespace DownloadManager.Services.Impl
         {
             var ev = new ServerSentEvent { Id = "speed", Data = new[] { $"{args.BytesPerSecond}" } };
 
-            _serverSentEventsService.SendEventAsync(ev);
+            SendEvent(ev);
         }
 
         private void DownloadingProgressChanged(object sender, TotalProgress args)
         {
             var ev = new ServerSentEvent
             {
-                Id = $"{args.TaskInformation.FileName}", Data = new[]
+                Id = $"{args.TaskInformation.FileName}",
+                Data = new[]
                 {
                     $"{args.TotalBytesDownloaded} / {args.TaskInformation.BytesEnd - args.TaskInformation.BytesStart + 1} bytes"
                 }
             };
 
+            SendEvent(ev);
+        }
+
+        private void SendEvent(ServerSentEvent ev)
+        {
+            autoResetEvent.WaitOne();
             _serverSentEventsService.SendEventAsync(ev);
+            autoResetEvent.Set();
         }
 
         private TotalProgress CreateTotal(TaskInformation taskInformation, long progress)

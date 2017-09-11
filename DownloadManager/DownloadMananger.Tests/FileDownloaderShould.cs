@@ -4,11 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using SystemInterface.IO;
 using SystemInterface.Net;
+using DownloadManager;
 using DownloadManager.Models;
 using DownloadManager.Services;
 using DownloadManager.Services.Impl;
 using DownloadManager.Tools;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -35,7 +37,10 @@ namespace DownloadMananger.Tests
             _httpWebResponseMock.Setup(m => m.GetResponseStream()).Returns(_streamMock.Object);
             _dateTimeProviderMock.Setup(m => m.GetCurrentDateTime());
 
-            _fileDownloader = new FileDownloader(_fileMock.Object, _downloadSpeedMeterMock.Object, _downloadSpeedLimiterMock.Object, null);
+            var optionsMock = new Mock<IOptions<ApplicationOptions>>();
+            optionsMock.SetupGet(m => m.Value).Returns(new ApplicationOptions());
+
+            _fileDownloader = new FileDownloader(_fileMock.Object, _downloadSpeedMeterMock.Object, _downloadSpeedLimiterMock.Object, null, optionsMock.Object);
         }
 
         [Fact]

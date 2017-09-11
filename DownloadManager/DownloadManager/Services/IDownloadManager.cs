@@ -7,6 +7,6 @@ namespace DownloadManager.Services
     public interface IDownloadManager
     {
         List<TaskInformation> Tasks { get; }
-        Task DownloadFile(string url, int tasksCount);
+        IEnumerable<string> DownloadFile(string url);
     }
 }
