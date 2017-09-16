@@ -6,6 +6,11 @@ class FileInfo {
     progress: string;
 }
 
+enum SpeedUnit {
+    Mbit = 0,
+    Kbit = 1
+}
+
 @Component({
     selector: 'files',
     templateUrl: './files.component.html'
@@ -14,6 +19,7 @@ export class FilesComponent {
     public link: string;
     public threads: number;
     public bytes: number;
+    public unit: SpeedUnit = 0;
 
     files: string;
     files1: string[] = [];
@@ -26,6 +32,15 @@ export class FilesComponent {
     }
 
     public start() {
+        switch(this.unit) {
+            case SpeedUnit.Kbit: 
+                this.bytes *= 125;
+                break;
+            case SpeedUnit.Mbit: 
+                this.bytes *= 125000;
+                break;
+        }
+
         let body: any = { "url": this.link, "threads": this.threads, "speed": this.bytes };
 
         var self = this;

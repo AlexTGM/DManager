@@ -2,7 +2,11 @@
 
 <input type="text" [(ngModel)]="link" placeholder="link to download"/>
 <input type="number" [(ngModel)]="threads" placeholder="threads count limit"/>
-<input type="number" [(ngModel)]="bytes" placeholder="bytes per second linit"/>
+<input type="number" [(ngModel)]="bytes" placeholder="bytes per second limit"/>
+<select [(ngModel)]="unit">
+    <option value="0">Mbit</option>
+    <option value="1">Kbit</option>
+</select>
 <input type="button" (click)="start()" value="Click Me" />
 
 <hr/>
