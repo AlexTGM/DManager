@@ -39,7 +39,7 @@ namespace DownloadMananger.Tests
             _optionsMock.SetupGet(m => m.Value).Returns(new ApplicationOptions());
 
             _downloadSpeedLimiter =
-                new DownloadSpeedLimiter(_timerFactoryMock.Object, _dateTimeProviderMock.Object, _optionsMock.Object)
+                new DownloadSpeedLimiter(_timerFactoryMock.Object, _dateTimeProviderMock.Object)
                 {
                     DownloadPerSecondThreshold = _downloadPerSecondThreshold
                 };

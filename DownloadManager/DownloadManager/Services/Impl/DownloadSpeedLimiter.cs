@@ -20,14 +20,9 @@ namespace DownloadManager.Services.Impl
         public DateTime CheckpointDateTime { get; private set; }
         public ITimer Timer { get; }
 
-        public DownloadSpeedLimiter(ITimerFactory timerFactory, 
-            IDateTimeProvider dateTimeProvider, IOptions<ApplicationOptions> options)
+        public DownloadSpeedLimiter(ITimerFactory timerFactory, IDateTimeProvider dateTimeProvider)
         {
             _dateTimeProvider = dateTimeProvider;
-
-            DownloadPerSecondThreshold = options.Value.DefaultThreasholdPerSecond == 0
-                ? long.MaxValue
-                : options.Value.DefaultThreasholdPerSecond;
 
             Timer = timerFactory.Create();
             Timer.AutoReset = false;

@@ -32,23 +32,25 @@ export class FilesComponent {
     }
 
     public start() {
+        var speedLimit = 0;
+
         switch(this.unit) {
             case SpeedUnit.Kbit: 
-                this.bytes *= 125;
+                speedLimit = this.bytes * 125;
                 break;
             case SpeedUnit.Mbit: 
-                this.bytes *= 125000;
+                speedLimit = this.bytes * 125000;
                 break;
         }
 
-        let body: any = { "url": this.link, "threads": this.threads, "speed": this.bytes };
+        let source = new this.EventSource(this.originUrl + '/api/sse-notifications');
+        
+        let body: any = { "url": this.link, "threads": this.threads, "speed": speedLimit };
 
         var self = this;
-
+        
         this.http.post(this.originUrl + '/api/Links', body).subscribe(result => {
             console.log(result);
-
-            let source = new this.EventSource(this.originUrl + '/api/sse-notifications');
             source.onmessage = event => {
                 if (event.lastEventId === "speed") {
                     this.zone.run(() =>

@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SystemInterface.Net;
+using DownloadManager;
 using DownloadManager.Models;
 using DownloadManager.Services;
 using DownloadManager.Services.Impl;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -20,6 +22,7 @@ namespace DownloadMananger.Tests
         private readonly Mock<IHttpWebRequest> _httpWebRequestMock;
         private readonly Mock<IFileDownloader> _fileDownloaderMock;
         private readonly Mock<IHttpWebResponse> _httpWebResponseMock;
+        private readonly Mock<IOptions<ApplicationOptions>> _optionsMock;
 
         private readonly IFileDownloaderManager _fileDownloaderManager;
 
@@ -30,9 +33,12 @@ namespace DownloadMananger.Tests
             _taskInformations = Enumerable.Repeat(new TaskInformation("", 0, 0), 10);
 
             _factoryMock = new Mock<IHttpWebRequestFactory>();
+            _optionsMock = new Mock<IOptions<ApplicationOptions>>();
             _httpWebRequestMock = new Mock<IHttpWebRequest>();
             _fileDownloaderMock = new Mock<IFileDownloader>();
             _httpWebResponseMock = new Mock<IHttpWebResponse>();
+
+            _optionsMock.SetupGet(m => m.Value).Returns(new ApplicationOptions());
 
             _httpWebRequestMock.Setup(m => m.GetResponse())
                 .Returns(_httpWebResponseMock.Object);
@@ -43,7 +49,8 @@ namespace DownloadMananger.Tests
             _fileDownloaderMock.Setup(m => m.SaveFile(_httpWebResponseMock.Object, It.IsAny<TaskInformation>()))
                 .Returns(async () => await Task.FromResult(100L));
 
-            _fileDownloaderManager = new FileDownloaderManager(_factoryMock.Object, _fileDownloaderMock.Object);
+            _fileDownloaderManager =
+                new FileDownloaderManager(_factoryMock.Object, _fileDownloaderMock.Object, _optionsMock.Object);
         }
 
         [Fact]
@@ -53,33 +60,6 @@ namespace DownloadMananger.Tests
 
             await _fileDownloaderManager.DownloadFile(It.IsAny<Uri>(), _taskInformations.Take(expectedTasks));
             _fileDownloaderManager.DownloadingFunctions.Count.ShouldBeEquivalentTo(expectedTasks);
-        }
-
-        [Theory]
-        [InlineData(1)]
-        [InlineData(5)]
-        [InlineData(10)]
-        public async Task DownloadFileToLocalStorage(int expectedTasks)
-        {
-            const int bytesPerTask = 100;
-
-            var actual = await _fileDownloaderManager.DownloadFile(It.IsAny<Uri>(), _taskInformations.Take(expectedTasks));
-            actual.ShouldBeEquivalentTo(bytesPerTask * expectedTasks);
-        }
-
-        [Fact]
-        public void ListenToFileDownloaderEvents()
-        {
-            var eventsData = new[] {10L, 50L, 0L, 40L};
-
-            foreach (var loaded in eventsData)
-            {
-                var downloadProgress = new DownloadProgress(null, loaded);
-                _fileDownloaderMock.Raise(m => m.BytesDownloadedChanged += null, _fileDownloaderMock, downloadProgress);
-            }
-
-            _fileDownloaderManager.DownloadFile(It.IsAny<Uri>(), _taskInformations.Take(1));
-            _fileDownloaderManager.TotalBytesDownloaded.ShouldBeEquivalentTo(eventsData.Sum());
         }
     }
 }

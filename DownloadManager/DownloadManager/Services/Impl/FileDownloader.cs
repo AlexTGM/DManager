@@ -37,6 +37,11 @@ namespace DownloadManager.Services.Impl
         public event EventHandler<DownloadProgress> BytesDownloadedChanged;
         public event EventHandler<TotalProgress> TotalProgressChanged;
 
+        public void SetMaximumSpeed(long maximumSpeed)
+        {
+            _downloadSpeedLimiter.DownloadPerSecondThreshold = maximumSpeed;
+        }
+
         public void Unsubscribe()
         {
             _autoResetEvent?.Dispose();

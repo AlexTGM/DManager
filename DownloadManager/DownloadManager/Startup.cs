@@ -23,7 +23,7 @@ namespace DownloadManager
     public class ApplicationOptions
     {
         public int DefaultThreadsPerDownload { get; set; } = 1;
-        public long DefaultThreasholdPerSecond { get; set; } = 0;
+        public long DefaultThreasholdPerSecond { get; set; } = long.MaxValue;
         public long BytesPerSecond { get; set; }
         public int ThreadsPerDownload { get; set; }
     }
