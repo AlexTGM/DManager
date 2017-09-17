@@ -41,7 +41,7 @@ namespace DownloadMananger.Tests
                 .Returns(_httpWebRequestMock.Object);
 
             _fileDownloaderMock.Setup(m => m.SaveFile(_httpWebResponseMock.Object, It.IsAny<TaskInformation>()))
-                .Returns(async () => 100L);
+                .Returns(async () => await Task.FromResult(100L));
 
             _fileDownloaderManager = new FileDownloaderManager(_factoryMock.Object, _fileDownloaderMock.Object);
         }
@@ -74,7 +74,7 @@ namespace DownloadMananger.Tests
 
             foreach (var loaded in eventsData)
             {
-                var downloadProgress = new DownloadProgress {BytesDownloaded = loaded, TaskInformation = null};
+                var downloadProgress = new DownloadProgress(null, loaded);
                 _fileDownloaderMock.Raise(m => m.BytesDownloadedChanged += null, _fileDownloaderMock, downloadProgress);
             }
 

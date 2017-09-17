@@ -22,7 +22,7 @@ namespace DownloadMananger.Tests
         private readonly IDownloadSpeedLimiter _downloadSpeedLimiter;
 
         private readonly long _downloadPerSecondThreshold = 1000;
-        private readonly DownloadProgress _downloadProgress = new DownloadProgress { BytesDownloaded = 1000 };
+        private readonly DownloadProgress _downloadProgress = new DownloadProgress(null, 1000);
 
         public DownloadSpeedLimiterShould()
         {

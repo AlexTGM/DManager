@@ -1,18 +1,16 @@
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using SystemInterface.IO;
 using SystemInterface.Net;
 using DownloadManager.Models;
 using Lib.AspNetCore.ServerSentEvents;
-using Microsoft.Extensions.Options;
 
 namespace DownloadManager.Services.Impl
 {
     public class FileDownloader : IFileDownloader
     {
-        private AutoResetEvent autoResetEvent = new AutoResetEvent(true);
+        private readonly AutoResetEvent _autoResetEvent = new AutoResetEvent(true);
 
         private readonly IFile _file;
         private readonly IDownloadSpeedMeter _downloadSpeedMeter;
@@ -20,15 +18,12 @@ namespace DownloadManager.Services.Impl
         private readonly IServerSentEventsService _serverSentEventsService;
 
         public FileDownloader(IFile file, IDownloadSpeedMeter downloadSpeedMeter, 
-            IDownloadSpeedLimiter downloadSpeedLimiter, IServerSentEventsService serverSentEventsService,
-            IOptions<ApplicationOptions> applicationOptions)
+            IDownloadSpeedLimiter downloadSpeedLimiter, IServerSentEventsService serverSentEventsService)
         {
             _file = file;
             _downloadSpeedMeter = downloadSpeedMeter;
             _downloadSpeedLimiter = downloadSpeedLimiter;
             _serverSentEventsService = serverSentEventsService;
-
-            _downloadSpeedLimiter.DownloadPerSecondThreshold = applicationOptions.Value.BytesPerSecond;
 
             BytesDownloadedChanged += _downloadSpeedLimiter.FileDownloaderBytesDownloaded;
             BytesDownloadedChanged += _downloadSpeedMeter.FileDownloaderBytesDownloaded;
@@ -37,8 +32,15 @@ namespace DownloadManager.Services.Impl
             _downloadSpeedMeter.DownloadingSpeedChanged += DownloadingSpeedChanged;
         }
 
+        public bool IsPaused { get; set; }
+
+        public event EventHandler<DownloadProgress> BytesDownloadedChanged;
+        public event EventHandler<TotalProgress> TotalProgressChanged;
+
         public void Unsubscribe()
         {
+            _autoResetEvent?.Dispose();
+
             BytesDownloadedChanged -= _downloadSpeedLimiter.FileDownloaderBytesDownloaded;
             BytesDownloadedChanged -= _downloadSpeedMeter.FileDownloaderBytesDownloaded;
 
@@ -59,32 +61,23 @@ namespace DownloadManager.Services.Impl
 
                     while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
                     {
-                        BytesDownloadedChanged?.Invoke(this, CreateProgress(taskInformation, bytesRead));
+                        BytesDownloadedChanged?.Invoke(this, new DownloadProgress(taskInformation, bytesRead));
 
                         while (_downloadSpeedLimiter.IsPaused) await Task.Delay(10);
 
                         fileStream.Write(buffer, 0, bytesRead);
 
                         totalBytesWritten += bytesRead;
-                        TotalProgressChanged?.Invoke(this, CreateTotal(taskInformation, totalBytesWritten));
+                        TotalProgressChanged?.Invoke(this, new TotalProgress(taskInformation, totalBytesWritten));
                     }
                 }
             }
 
             return totalBytesWritten;
         }
-
-        public bool IsPaused { get; set; }
         
-        public event EventHandler<DownloadProgress> BytesDownloadedChanged;
-        public event EventHandler<TotalProgress> TotalProgressChanged;
-        
-        private void DownloadingSpeedChanged(object sender, DownloadSpeed args)
-        {
-            var ev = new ServerSentEvent { Id = "speed", Data = new[] { $"{args.BytesPerSecond}" } };
-
-            SendEvent(ev);
-        }
+        private void DownloadingSpeedChanged(object sender, DownloadSpeed args) => 
+            SendEvent(new ServerSentEvent {Id = "speed", Data = new[] {$"{args.BytesPerSecond}"}});
 
         private void DownloadingProgressChanged(object sender, TotalProgress args)
         {
@@ -102,15 +95,9 @@ namespace DownloadManager.Services.Impl
 
         private void SendEvent(ServerSentEvent ev)
         {
-            autoResetEvent.WaitOne();
+            _autoResetEvent.WaitOne();
             _serverSentEventsService.SendEventAsync(ev);
-            autoResetEvent.Set();
+            _autoResetEvent.Set();
         }
-
-        private TotalProgress CreateTotal(TaskInformation taskInformation, long progress)
-            => new TotalProgress {TaskInformation = taskInformation, TotalBytesDownloaded = progress};
-
-        private DownloadProgress CreateProgress(TaskInformation taskInformation, long bytesDownloaded)
-            => new DownloadProgress {BytesDownloaded = bytesDownloaded, TaskInformation = taskInformation };
     }
 }

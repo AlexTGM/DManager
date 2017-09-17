@@ -54,7 +54,7 @@ namespace DownloadMananger.Tests
                 .Returns(new DateTime(2000, 1, 1, 0, 0, 0))
                 .Returns(new DateTime(2000, 1, 1, 0, 0, 0));
 
-            _downloadSpeedMeter.FileDownloaderBytesDownloaded(null, new DownloadProgress { BytesDownloaded = 100 });
+            _downloadSpeedMeter.FileDownloaderBytesDownloaded(null, new DownloadProgress(null, 100));
 
             _downloadSpeedMeter.BytesDownloadedSinceLastCheckpoint.ShouldBeEquivalentTo(100);
         }
@@ -62,7 +62,7 @@ namespace DownloadMananger.Tests
         [Fact]
         public void MeasureDownloadingSpeedWhenSecondSinceLastCheckpointIsPassed()
         {
-            _downloadSpeedMeter.FileDownloaderBytesDownloaded(null, new DownloadProgress { BytesDownloaded = 1000 });
+            _downloadSpeedMeter.FileDownloaderBytesDownloaded(null, new DownloadProgress(null, 1000));
 
             _timerMock.Raise(m => m.Elapsed += null, It.IsAny<object>(), It.IsAny<ElapsedEventArgs>());
 
@@ -72,7 +72,7 @@ namespace DownloadMananger.Tests
         [Fact]
         public void ResetDownloadedBytesWhenSpeedIsMeasured()
         {
-            _downloadSpeedMeter.FileDownloaderBytesDownloaded(null, new DownloadProgress { BytesDownloaded = 1000 });
+            _downloadSpeedMeter.FileDownloaderBytesDownloaded(null, new DownloadProgress(null, 1000));
 
             _timerMock.Raise(m => m.Elapsed += null, It.IsAny<object>(), It.IsAny<ElapsedEventArgs>());
 
@@ -82,7 +82,7 @@ namespace DownloadMananger.Tests
         [Fact]
         public void ResetCheckpointDateTimeWhenSpeedIsMeasured()
         {
-            _downloadSpeedMeter.FileDownloaderBytesDownloaded(null, new DownloadProgress { BytesDownloaded = 1000 });
+            _downloadSpeedMeter.FileDownloaderBytesDownloaded(null, new DownloadProgress(null, 1000));
 
             _timerMock.Raise(m => m.Elapsed += null, It.IsAny<object>(), It.IsAny<ElapsedEventArgs>());
 
@@ -93,8 +93,8 @@ namespace DownloadMananger.Tests
         public void RaiseDownloadSpeedChangedEvent()
         {
             _downloadSpeedMeter.DownloadingSpeedChanged += (sender, speed) => speed.BytesPerSecond.ShouldBeEquivalentTo(1000);
-            
-            _downloadSpeedMeter.FileDownloaderBytesDownloaded(null, new DownloadProgress { TaskInformation = null, BytesDownloaded = 1000 });
+
+            _downloadSpeedMeter.FileDownloaderBytesDownloaded(null, new DownloadProgress(null, 1000));
 
             _timerMock.Raise(m => m.Elapsed += null, It.IsAny<object>(), It.IsAny<ElapsedEventArgs>());
         }
