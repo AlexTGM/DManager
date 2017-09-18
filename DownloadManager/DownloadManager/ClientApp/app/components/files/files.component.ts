@@ -20,6 +20,7 @@ export class FilesComponent {
     public threads: number;
     public bytes: number;
     public unit: SpeedUnit = 0;
+    public exception: string;
 
     files: string;
     files1: string[] = [];
@@ -50,7 +51,11 @@ export class FilesComponent {
         var self = this;
         
         this.http.post(this.originUrl + '/api/Links', body).subscribe(result => {
-            console.log(result);
+            if (result.json()["exception"]) {
+                this.exception = result.json()["exception"].Message;
+                return;
+            }
+                
             source.onmessage = event => {
                 if (event.lastEventId === "speed") {
                     this.zone.run(() =>
@@ -67,9 +72,5 @@ export class FilesComponent {
                 }
             };
         });
-
-        this.link = "";
-        this.threads = 1;
-        this.bytes = 0;
     }
 }
