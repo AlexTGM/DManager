@@ -55,30 +55,39 @@ namespace DownloadManager.Services.Impl
 
         public async Task<long> SaveFile(IHttpWebResponse response, TaskInformation taskInformation)
         {
-            var buffer = new byte[524288];
-            var totalBytesWritten = 0L;
-
-            using (var fileStream = _file.OpenWrite(taskInformation.FileName))
+            try
             {
-                using (var stream = response.GetResponseStream())
+                var buffer = new byte[524288];
+                var totalBytesWritten = 0L;
+
+                using (var fileStream = _file.OpenWrite(taskInformation.FileName))
                 {
-                    int bytesRead;
-
-                    while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    using (var stream = response.GetResponseStream())
                     {
-                        BytesDownloadedChanged?.Invoke(this, new DownloadProgress(taskInformation, bytesRead));
+                        int bytesRead;
 
-                        while (_downloadSpeedLimiter.IsPaused) await Task.Delay(10);
+                        while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            BytesDownloadedChanged?.Invoke(this, new DownloadProgress(taskInformation, bytesRead));
 
-                        fileStream.Write(buffer, 0, bytesRead);
+                            while (_downloadSpeedLimiter.IsPaused) await Task.Delay(10);
 
-                        totalBytesWritten += bytesRead;
-                        TotalProgressChanged?.Invoke(this, new TotalProgress(taskInformation, totalBytesWritten));
+                            fileStream.Write(buffer, 0, bytesRead);
+
+                            totalBytesWritten += bytesRead;
+                            TotalProgressChanged?.Invoke(this, new TotalProgress(taskInformation, totalBytesWritten));
+                        }
                     }
                 }
-            }
 
-            return totalBytesWritten;
+                return totalBytesWritten;
+            }
+            catch (Exception exc)
+            {
+                SendEvent(new ServerSentEvent {Id = $"{taskInformation.FileName}", Data = new [] {exc.Message}});
+
+                return 0;
+            }
         }
         
         private void DownloadingSpeedChanged(object sender, DownloadSpeed args) => 
