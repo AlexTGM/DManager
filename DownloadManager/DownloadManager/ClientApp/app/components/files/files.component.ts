@@ -72,5 +72,9 @@ export class FilesComponent {
                 }
             };
         });
+
+        this.link = "";
+        this.threads = 1;
+        this.bytes = 0;
     }
 }
