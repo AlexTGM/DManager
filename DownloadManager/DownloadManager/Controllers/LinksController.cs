@@ -24,6 +24,7 @@ namespace DownloadManager.Controllers
             _options.ThreadsPerDownload = request.Threads ?? _options.DefaultThreadsPerDownload;
             _options.BytesPerSecond = request.Speed ?? _options.DefaultThreasholdPerSecond;
 
+            if (_options.BytesPerSecond == 0) _options.BytesPerSecond = long.MaxValue;
 
             var fileNames = _downloadManager.DownloadFile(request.Url);
 
